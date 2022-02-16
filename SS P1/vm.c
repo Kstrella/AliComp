@@ -44,25 +44,41 @@ int base(int L, int BP, int *stack)
 void execute_program(instruction *code, int printFlag)
 {
 	// keep this
+
+	int BP = MAX_STACK_LENGTH -1;
+	int SP = BP + 1;
+	int PC = 0;
+	int IR;
+
 	if (printFlag)
 	{
 		printf("\t\t\t\t\tPC\tSP\tBP\n");
 		printf("Initial values:\t\t\t\t%d\t%d\t%d\n", PC, SP, BP);
 
 
-		switch(instruction){
-			case 0:
-
-			break;
-		}
-
-
 	}
-//fetch instruction then
 
+	/*
+	BP = MAX_STACK_LENGTH - 1 // Base Pointer – Points to the base of the
+	current AR
+	SP = BP + 1 // Stack Pointer – Points to the top entry of
+	the stack
+	PC = 0 // Program Counter – Points to next
+	instruction
+	IR // Instruction Register - holds the current
+	instructioncan be an array or a struct
+	*/
+	switch(instruction){
+		//LIT
+		case 1:
+			rf[instruction.r] = instruction.m;
+			break;
 
+			//RET
+			case 2:
 
-//ayeeee
+				break;
+	}
 }
 
 //fetch(IS,PC);
