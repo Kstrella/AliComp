@@ -16,12 +16,12 @@ void print_execution(int line, char *opname, instruction IR, int PC, int BP, int
 	int i;
 	// print out instruction and registers
 	printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t\t", line, opname, IR.r, IR.l, IR.m, PC, SP, BP);
-	
+
 	// print register file
 	for (i = 0; i < REG_FILE_SIZE; i++)
 		printf("%d ", RF[i]);
 	printf("\n");
-	
+
 	// print stack
 	printf("stack:\t");
 	for (i = MAX_STACK_LENGTH - 1; i >= SP; i--)
@@ -48,5 +48,27 @@ void execute_program(instruction *code, int printFlag)
 	{
 		printf("\t\t\t\t\tPC\tSP\tBP\n");
 		printf("Initial values:\t\t\t\t%d\t%d\t%d\n", PC, SP, BP);
+
+
+		switch(instruction){
+			case 0:
+
+			break;
+		}
+
+
 	}
+//fetch instruction then
+
+
+
+
+}
+
+//fetch(IS,PC);
+instruction fetch(instruction *IS,int PC)
+{
+	return IS[PC];
+}
+
 }
