@@ -105,8 +105,9 @@ void execute_program(instruction *code, int printFlag)
 			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
 			{
 				// OUT OF BOUNDS ERROR
-				// print error
+				printf("Virtual Machine Error: Out of Bounds Access Error\n");
 				halt = true;
+				// TODO
 				// print trace
 				break;
 			}
@@ -129,24 +130,26 @@ void execute_program(instruction *code, int printFlag)
 			SP -= IR.m;
 			if (SP < 0)
 			{
-				// TODO
 				// STACK OVERFLOW ERROR
-				// print error
+				printf("Virtual Machine Error: Stack Overflow Error\n");
 				halt = true;
+				// TODO
 				// print trace
 			}
 			break;
 		// JMP
 		case 7:
 			// TODO
-			// JUMP TO INSTRUCTION M
+			// Jump to instruction at IR.m
+			PC = code[IR.m];
 			break;
 		// JPC
 		case 8:
 			if (RF[IR.r] == 0)
 			{
 				// TODO
-				// JUMP TO INSTRUCTION AT IR.m
+				// Jump to instruction at IR.m
+				PC = code[IR.m];
 			}
 			break;
 		// WRT
@@ -199,7 +202,7 @@ void execute_program(instruction *code, int printFlag)
 			break;
 		// LEQ
 		case 21:
-			RF[IR.r] = (RF[IR.l] <= RRF[IR.m]) ? 1 : 0;
+			RF[IR.r] = (RF[IR.l] <= RF[IR.m]) ? 1 : 0;
 			break;
 		// GTR
 		case 22:
