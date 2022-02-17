@@ -4,6 +4,11 @@
 		printf("Virtual Machine Error: Out of Bounds Access Error\n");
 */
 
+// TODO
+// Check loop conditional
+// Find safe place/way to call print_execution()
+// Cases: 2, 5, 6, 7, 8
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +48,10 @@ int base(int L, int BP, int *stack)
 
 void execute_program(instruction *code, int printFlag)
 {
+	// Memory Stack
+	int *stack = (int *)calloc(MAX_STACK_LENGTH, sizeof(int));
+	// Register File
+	int *RF = (int *)calloc(REG_FILE_SIZE, sizeof(int));
 	// Base Pointer – Points to the base of the	current activation record
 	int BP = MAX_STACK_LENGTH - 1;
 	// Stack pointer - Points to the top entry of the stack
@@ -59,146 +68,154 @@ void execute_program(instruction *code, int printFlag)
 	}
 
 	int halt = false;
-	
-	// TODO
-	// Need to loop over *code and nest the below switch into that loop construct
 
-	switch (IR)
+	while (!halt)
 	{
-	// LIT
-	case 1:
-		RF[IR.r] = IR.m;
-		break;
-	// RET
-	case 2:
-		// Return from current procedure (X) to the last procedure (Y).
-		// SP = the index of the bottom of Y’s AR
-		// BP = dynamic link value from X’s AR
-		// PC = return address value from X’s AR
-		break;
-	// LOD
-	case 3:
-		if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
+		IR = fetch(code, PC++);
+
+		switch (IR.opcode)
 		{
-			// OUT OF BOUNDS ERROR
-			// print error
-			halt = true;
-			// print trace
+		// LIT
+		case 1:
+			RF[IR.r] = IR.m;
 			break;
-		}
-		// Load value to register IR.r from the stack location at offset RF[IR.m] from L levels up
-		RF[IR.r] = stack[base(IR.l) - RF[IR.m]];
-		break;
-	// STO
-	case 4:
-		if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
-		{
-			// OUT OF BOUNDS ERROR
-			// print error
-			halt = true;
-			// print trace
-			break;
-		}
-		stack[base(IR.l) - RF[IR.m]] = RF[IR.r];
-		break;
-	// CAL
-	case 5:
-		// Call procedure at code index M.
-		// 3 values in the AR:
-		// 		1st - static link = base(L)
-		// 		2nd - dynamic link = BP
-		// 		3rd - return address = PC
-		// After creating the AR:
-		// 		BP = the index of the first entry of the new AR
-		// 		PC = IR.m
-		break;
-	// INC
-	case 6:
-		SP -= IR.m;
-		if (SP < 0)
-		{
-			// STACK OVERFLOW ERROR
-			// print error
-			halt = true;
-			// print trace
-		}
-		break;
-	// JMP
-	case 7:
-		// TODO
-		// JUMP TO INSTRUCTION M
-		break;
-	// JPC
-	case 8:
-		if (RF[IR.r] == 0)
-		{
+		// RET
+		case 2:
 			// TODO
-			// JUMP TO INSTRUCTION AT IR.m
+			// Return from current procedure (X) to the last procedure (Y).
+			// SP = the index of the bottom of Y’s AR
+			// BP = dynamic link value from X’s AR
+			// PC = return address value from X’s AR
+			break;
+		// LOD
+		case 3:
+			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
+			{
+				// OUT OF BOUNDS ERROR
+				// print error
+				halt = true;
+				// print trace
+				break;
+			}
+			// Load value to register IR.r from the stack location at offset RF[IR.m] from L levels up
+			RF[IR.r] = stack[base(IR.l) - RF[IR.m]];
+			break;
+		// STO
+		case 4:
+			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
+			{
+				// OUT OF BOUNDS ERROR
+				// print error
+				halt = true;
+				// print trace
+				break;
+			}
+			stack[base(IR.l) - RF[IR.m]] = RF[IR.r];
+			break;
+		// CAL
+		case 5:
+			// TODO
+			// Call procedure at code index M.
+			// 3 values in the AR:
+			// 		1st - static link = base(L)
+			// 		2nd - dynamic link = BP
+			// 		3rd - return address = PC
+			// After creating the AR:
+			// 		BP = the index of the first entry of the new AR
+			// 		PC = IR.m
+			break;
+		// INC
+		case 6:
+			SP -= IR.m;
+			if (SP < 0)
+			{
+				// TODO
+				// STACK OVERFLOW ERROR
+				// print error
+				halt = true;
+				// print trace
+			}
+			break;
+		// JMP
+		case 7:
+			// TODO
+			// JUMP TO INSTRUCTION M
+			break;
+		// JPC
+		case 8:
+			if (RF[IR.r] == 0)
+			{
+				// TODO
+				// JUMP TO INSTRUCTION AT IR.m
+			}
+			break;
+		// WRT
+		case 9:
+			printf(RF[IR.r]);
+			break;
+		// RED
+		case 10:
+			RF[R] = scanf();
+			break;
+		// HAL
+		case 11:
+			halt = true;
+			break;
+		// NEG
+		case 12:
+			RF[IR.r] = ~RF[IR.r];
+			break;
+		// ADD
+		case 13:
+			RF[IR.r] = RF[IR.l] + RF[IR.m];
+			break;
+		// SUB
+		case 14:
+			RF[IR.r] = RF[IR.l] - RF[IR.m];
+			break;
+		// MUL
+		case 15:
+			RF[IR.r] = RF[IR.l] * RF[IR.m];
+			break;
+		// DIV
+		case 16:
+			RF[IR.r] = RF[IR.l] / RF[IR.m];
+			break;
+		// MOD
+		case 17:
+			RF[IR.r] = RF[IR.l] % RF[IR.m];
+			break;
+		// EQL
+		case 18:
+			RF[IR.r] = (RF[IR.l] == RF[IR.m]) ? 1 : 0;
+			break;
+		// NEQ
+		case 19:
+			RF[IR.r] = (RF[IR.l] != RF[IR.m]) ? 1 : 0;
+			break;
+		// LSS
+		case 20:
+			RF[IR.r] = (RF[IR.l] < RF[IR.m]) ? 1 : 0;
+			break;
+		// LEQ
+		case 21:
+			RF[IR.r] = (RF[IR.l] <= RRF[IR.m]) ? 1 : 0;
+			break;
+		// GTR
+		case 22:
+			RF[IR.r] = (RF[IR.l] > RF[IR.m]) ? 1 : 0;
+			break;
+		// GEQ
+		case 23:
+			RF[IR.r] = (RF[IR.l] >= RF[IR.m]) ? 1 : 0;
+			break;
+		case default:
+			break;
 		}
-		break;
-	// WRT
-	case 9:
-		printf(RF[IR.r]);
-		break;
-	// RED
-	case 10:
-		RF[R] = scanf();
-		break;
-	// HAL
-	case 11:
-		halt = true;
-		break;
-	// NEG
-	case 12:
-		RF[IR.r] = ~RF[IR.r];
-		break;
-	// ADD
-	case 13:
-		RF[IR.r] = RF[IR.l] + RF[IR.m];
-		break;
-	// SUB
-	case 14:
-		RF[IR.r] = RF[IR.l] - RF[IR.m];
-		break;
-	// MUL
-	case 15:
-		RF[IR.r] = RF[IR.l] * RF[IR.m];
-		break;
-	// DIV
-	case 16:		
-		RF[IR.r] = RF[IR.l] / RF[IR.m];
-		break;
-	// MOD
-	case 17:
-		RF[IR.r] = RF[IR.l] % RF[IR.m];
-		break;
-	// EQL
-	case 18:
-		RF[IR.r] = (RF[IR.l] == RF[IR.m]) ? 1 : 0;
-		break;
-	// NEQ
-	case 19:
-		RF[IR.r] = (RF[IR.l] != RF[IR.m]) ? 1 : 0;
-		break;
-	// LSS
-	case 20:
-		RF[IR.r] = (RF[IR.l] < RF[IR.m]) ? 1 : 0;
-		break;
-	// LEQ
-	case 21:
-		RF[IR.r] = (RF[IR.l] <= RRF[IR.m]) ? 1 : 0;
-		break;
-	// GTR
-	case 22:
-		RF[IR.r] = (RF[IR.l] > RF[IR.m]) ? 1 : 0;
-		break;
-	// GEQ
-	case 23:
-		RF[IR.r] = (RF[IR.l] >= RF[IR.m]) ? 1 : 0;
-		break;
-	case default:
-		break;
 	}
+
+	free(stack);
+	free(RF);
 }
 
 // Returns: instruction as defined in 'compiler.h'
