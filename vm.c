@@ -158,7 +158,7 @@ void execute_program(instruction *code, int printFlag)
 			break;
 		// RED
 		case 10:
-			RF[R] = scanf();
+			RF[IR.r] = scanf();
 			break;
 		// HAL
 		case 11:
