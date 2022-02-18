@@ -1,3 +1,7 @@
+// 
+// Spring 2022
+// Authors: Justice Smith, Kevin Estrella
+
 /*
 	You can use these two print statements for the errors:
 		printf("Virtual Machine Error: Stack Overflow Error\n");
@@ -92,8 +96,9 @@ void execute_program(instruction *code, int printFlag)
 			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
 			{
 				// OUT OF BOUNDS ERROR
-				// print error
+				printf("Virtual Machine Error: Out of Bounds Access Error\n");
 				halt = true;
+				// TODO
 				// print trace
 				break;
 			}
