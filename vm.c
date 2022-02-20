@@ -73,7 +73,7 @@ void execute_program(instruction *code, int printFlag)
 
 	int halt = false;
 
-// Cases: 2, 5, 6, 7, 8
+
 
 	while (!halt)
 	{
@@ -124,16 +124,22 @@ void execute_program(instruction *code, int printFlag)
 			stack[base(IR.l) - RF[IR.m]] = RF[IR.r];
 			break;
 		// CAL
+		// Cases: 5, 6, 7, 8
 		case 5:
 			// TODO
 			// Call procedure at code index M.
 			// 3 values in the AR:
 			// 		1st - static link = base(L)
+			RF[SP-1] = base(IR.l);
 			// 		2nd - dynamic link = BP
+			RF[SP-2] = BP
 			// 		3rd - return address = PC
+			RF[SP-3] = PC
 			// After creating the AR:
 			// 		BP = the index of the first entry of the new AR
+			CP = SP-1;
 			// 		PC = IR.m
+			PC = IR.m;
 			break;
 		// INC
 		case 6:
