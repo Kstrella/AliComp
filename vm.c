@@ -73,6 +73,8 @@ void execute_program(instruction *code, int printFlag)
 
 	int halt = false;
 
+// Cases: 2, 5, 6, 7, 8
+
 	while (!halt)
 	{
 		IR = fetch(code, PC++);
@@ -87,9 +89,12 @@ void execute_program(instruction *code, int printFlag)
 		case 2:
 			// TODO
 			// Return from current procedure (X) to the last procedure (Y).
-			// SP = the index of the bottom of Y’s AR
+			// SP = the index of the end of Y’s AR (BP + 1) 
+			SP = BP + 1;
 			// BP = dynamic link value from X’s AR
+			BP = RF[SP-2];
 			// PC = return address value from X’s AR
+			PC = RF[SP-3];
 			break;
 		// LOD
 		case 3:
