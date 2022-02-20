@@ -12,6 +12,7 @@
 // Check loop conditional
 // Find safe place/way to call print_execution()
 // Cases: 2, 5, 6, 7, 8
+//look over 2,5,
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,7 +125,6 @@ void execute_program(instruction *code, int printFlag)
 			stack[base(IR.l) - RF[IR.m]] = RF[IR.r];
 			break;
 		// CAL
-		// Cases: 5, 6, 7, 8
 		case 5:
 			// TODO
 			// Call procedure at code index M.
@@ -142,6 +142,7 @@ void execute_program(instruction *code, int printFlag)
 			PC = IR.m;
 			break;
 		// INC
+		
 		case 6:
 			SP -= IR.m;
 			if (SP < 0)
@@ -154,6 +155,7 @@ void execute_program(instruction *code, int printFlag)
 			}
 			break;
 		// JMP
+		// Cases: 6, 7, 8
 		case 7:
 			// TODO
 			// Jump to instruction at IR.m
