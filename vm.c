@@ -12,7 +12,7 @@
 // Check loop conditional
 // Find safe place/way to call print_execution()
 // Cases: 2, 5, 6, 7, 8
-//look over 2,5,
+// look over 2,5,
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,12 +73,11 @@ void execute_program(instruction *code, int printFlag)
 	}
 
 	int halt = false;
-
-
+	int line = 0;
 
 	while (!halt)
 	{
-		IR = fetch(code, PC++);
+		IR = fetch(code, PC);
 
 		switch (IR.opcode)
 		{
@@ -90,12 +89,12 @@ void execute_program(instruction *code, int printFlag)
 		case 2:
 			// TODO
 			// Return from current procedure (X) to the last procedure (Y).
-			// SP = the index of the end of Y’s AR (BP + 1) 
+			// SP = the index of the end of Y’s AR (BP + 1)
 			SP = BP + 1;
 			// BP = dynamic link value from X’s AR
-			BP = RF[SP-2];
+			BP = RF[SP - 2];
 			// PC = return address value from X’s AR
-			PC = RF[SP-3];
+			PC = RF[SP - 3];
 			break;
 		// LOD
 		case 3:
@@ -130,19 +129,18 @@ void execute_program(instruction *code, int printFlag)
 			// Call procedure at code index M.
 			// 3 values in the AR:
 			// 		1st - static link = base(L)
-			RF[SP-1] = base(IR.l);
+			RF[SP - 1] = base(IR.l);
 			// 		2nd - dynamic link = BP
-			RF[SP-2] = BP
+			RF[SP - 2] = BP;
 			// 		3rd - return address = PC
-			RF[SP-3] = PC
+			RF[SP - 3] = PC;
 			// After creating the AR:
 			// 		BP = the index of the first entry of the new AR
-			CP = SP-1;
+			BP = SP - 1;
 			// 		PC = IR.m
 			PC = IR.m;
 			break;
 		// INC
-		
 		case 6:
 			SP -= IR.m;
 			if (SP < 0)
@@ -233,6 +231,10 @@ void execute_program(instruction *code, int printFlag)
 		case default:
 			break;
 		}
+		
+		// TODO
+		// generate opname -> opcode mapping for supplying as argument
+		print_execution(line++, char *opname, IR, PC++, BP, SP, stack, RF);
 	}
 
 	free(stack);
