@@ -9,10 +9,7 @@
 */
 
 // TODO
-// Check loop conditional
-// Find safe place/way to call print_execution()
-// Cases: 2, 5, 6, 7, 8
-// look over 2,5,
+// test compilation and output
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +18,35 @@
 #define REG_FILE_SIZE 10
 #define MAX_STACK_LENGTH 100
 
-void print_execution(int line, char *opname, instruction IR, int PC, int BP, int SP, int *stack, int *RF)
+// opcodes start at 1, so shifted with stand-in 'err'
+const char *opname[] = {
+	"ERR",
+	"LIT",
+	"RET",
+	"LOD",
+	"STO",
+	"CAL",
+	"INC",
+	"JMP",
+	"JPC",
+	"WRT",
+	"RED",
+	"HAL",
+	"NEG",
+	"ADD",
+	"SUB",
+	"MUL",
+	"DIV",
+	"MOD",
+	"EQL",
+	"NEQ",
+	"LSS",
+	"LEQ",
+	"GTR",
+	"GEQ"};
+
+void
+print_execution(int line, char *opname, instruction IR, int PC, int BP, int SP, int *stack, int *RF)
 {
 	int i;
 	// print out instruction and registers
@@ -87,7 +112,6 @@ void execute_program(instruction *code, int printFlag)
 			break;
 		// RET
 		case 2:
-			// TODO
 			// Return from current procedure (X) to the last procedure (Y).
 			// SP = the index of the end of Y’s AR (BP + 1)
 			SP = BP + 1;
@@ -100,11 +124,8 @@ void execute_program(instruction *code, int printFlag)
 		case 3:
 			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
 			{
-				// OUT OF BOUNDS ERROR
 				printf("Virtual Machine Error: Out of Bounds Access Error\n");
 				halt = true;
-				// TODO
-				// print trace
 				break;
 			}
 			// Load value to register IR.r from the stack location at offset RF[IR.m] from L levels up
@@ -114,30 +135,24 @@ void execute_program(instruction *code, int printFlag)
 		case 4:
 			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
 			{
-				// OUT OF BOUNDS ERROR
 				printf("Virtual Machine Error: Out of Bounds Access Error\n");
 				halt = true;
-				// TODO
-				// print trace
 				break;
 			}
 			stack[base(IR.l) - RF[IR.m]] = RF[IR.r];
 			break;
 		// CAL
 		case 5:
-			// TODO
-			// Call procedure at code index M.
 			// 3 values in the AR:
-			// 		1st - static link = base(L)
+			// 1st - static link = base(L)
 			RF[SP - 1] = base(IR.l);
-			// 		2nd - dynamic link = BP
+			// 2nd - dynamic link = BP
 			RF[SP - 2] = BP;
-			// 		3rd - return address = PC
+			// 3rd - return address = PC
 			RF[SP - 3] = PC;
 			// After creating the AR:
-			// 		BP = the index of the first entry of the new AR
+			// BP = the index of the first entry of the new AR
 			BP = SP - 1;
-			// 		PC = IR.m
 			PC = IR.m;
 			break;
 		// INC
@@ -145,26 +160,18 @@ void execute_program(instruction *code, int printFlag)
 			SP -= IR.m;
 			if (SP < 0)
 			{
-				// STACK OVERFLOW ERROR
 				printf("Virtual Machine Error: Stack Overflow Error\n");
 				halt = true;
-				// TODO
-				// print trace
 			}
 			break;
 		// JMP
-		// Cases: 6, 7, 8
 		case 7:
-			// TODO
-			// Jump to instruction at IR.m
 			PC = code[IR.m];
 			break;
 		// JPC
 		case 8:
 			if (RF[IR.r] == 0)
 			{
-				// TODO
-				// Jump to instruction at IR.m
 				PC = code[IR.m];
 			}
 			break;
@@ -232,9 +239,15 @@ void execute_program(instruction *code, int printFlag)
 			break;
 		}
 		
-		// TODO
-		// generate opname -> opcode mapping for supplying as argument
-		print_execution(line++, char *opname, IR, PC++, BP, SP, stack, RF);
+		// We only want to print when not halt or when instr is HALT(valid state)
+		// All other halted states are errors and will break if printed.
+		if (printFlag && (!halt || opname[IR.opcode] == "HAL"))
+		{
+			print_execution(line, opname[IR.opcode], IR, PC, BP, SP, stack, RF);
+		}
+		
+		line++;
+		PC++;
 	}
 
 	free(stack);
