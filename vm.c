@@ -19,7 +19,7 @@
 #define MAX_STACK_LENGTH 100
 
 // opcodes start at 1, so shifted with stand-in 'err'
-const char *opname[] = {
+char *opname[] = {
 	"ERR",
 	"LIT",
 	"RET",
@@ -45,8 +45,7 @@ const char *opname[] = {
 	"GTR",
 	"GEQ"};
 
-void
-print_execution(int line, char *opname, instruction IR, int PC, int BP, int SP, int *stack, int *RF)
+void print_execution(int line, char *opname, instruction IR, int PC, int BP, int SP, int *stack, int *RF)
 {
 	int i;
 	// print out instruction and registers
@@ -76,6 +75,14 @@ int base(int L, int BP, int *stack)
 	return rtn;
 }
 
+// Returns: instruction as defined in 'compiler.h'
+// example call:
+// 		fetch(IS, PC);
+instruction fetch(instruction *IS, int PC)
+{
+	return IS[PC];
+}
+
 void execute_program(instruction *code, int printFlag)
 {
 	// Memory Stack
@@ -97,10 +104,10 @@ void execute_program(instruction *code, int printFlag)
 		printf("Initial values:\t\t\t\t%d\t%d\t%d\n", PC, SP, BP);
 	}
 
-	int halt = false;
+	int halt = 0;
 	int line = 0;
 
-	while (!halt)
+	while (halt == 0)
 	{
 		IR = fetch(code, PC);
 
@@ -109,6 +116,7 @@ void execute_program(instruction *code, int printFlag)
 		// LIT
 		case 1:
 			RF[IR.r] = IR.m;
+			PC++;
 			break;
 		// RET
 		case 2:
@@ -122,30 +130,32 @@ void execute_program(instruction *code, int printFlag)
 			break;
 		// LOD
 		case 3:
-			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
+			if (base(IR.l, BP, stack) - IR.m < 0 || base(IR.l, BP, stack) - IR.m >= MAX_STACK_LENGTH)
 			{
 				printf("Virtual Machine Error: Out of Bounds Access Error\n");
-				halt = true;
+				halt = 1;
 				break;
 			}
 			// Load value to register IR.r from the stack location at offset RF[IR.m] from L levels up
-			RF[IR.r] = stack[base(IR.l) - RF[IR.m]];
+			RF[IR.r] = stack[base(IR.l, BP, stack) - RF[IR.m]];
+			PC++;
 			break;
 		// STO
 		case 4:
-			if (base(IR.l) - IR.m < 0 || base(IR.l) - IR.m >= MAX_STACK_LENGTH)
+			if (base(IR.l, BP, stack) - IR.m < 0 || base(IR.l, BP, stack) - IR.m >= MAX_STACK_LENGTH)
 			{
 				printf("Virtual Machine Error: Out of Bounds Access Error\n");
-				halt = true;
+				halt = 1;
 				break;
 			}
-			stack[base(IR.l) - RF[IR.m]] = RF[IR.r];
+			stack[base(IR.l, BP, stack) - RF[IR.m]] = RF[IR.r];
+			PC++;
 			break;
 		// CAL
 		case 5:
 			// 3 values in the AR:
-			// 1st - static link = base(L)
-			RF[SP - 1] = base(IR.l);
+			// 1st - static link = base(L, BP, stack)
+			RF[SP - 1] = base(IR.l, BP, stack);
 			// 2nd - dynamic link = BP
 			RF[SP - 2] = BP;
 			// 3rd - return address = PC
@@ -157,107 +167,115 @@ void execute_program(instruction *code, int printFlag)
 			break;
 		// INC
 		case 6:
-			SP -= IR.m;
+			SP = SP - IR.m;
 			if (SP < 0)
 			{
 				printf("Virtual Machine Error: Stack Overflow Error\n");
-				halt = true;
+				halt = 1;
 			}
+			PC++;
 			break;
 		// JMP
 		case 7:
-			PC = code[IR.m];
+			PC = IR.m;
 			break;
 		// JPC
 		case 8:
+			PC++;
 			if (RF[IR.r] == 0)
 			{
-				PC = code[IR.m];
+				PC = IR.m;
 			}
 			break;
 		// WRT
 		case 9:
-			printf(RF[IR.r]);
+			printf("%d", RF[IR.r]);
+			PC++;
 			break;
 		// RED
 		case 10:
-			RF[IR.r] = scanf();
+			scanf("%d", &RF[IR.r]);
+			PC++;
 			break;
 		// HAL
 		case 11:
-			halt = true;
+			halt = 1;
+			PC++;
 			break;
 		// NEG
 		case 12:
 			RF[IR.r] = ~RF[IR.r];
+			PC++;
 			break;
 		// ADD
 		case 13:
 			RF[IR.r] = RF[IR.l] + RF[IR.m];
+			PC++;
 			break;
 		// SUB
 		case 14:
 			RF[IR.r] = RF[IR.l] - RF[IR.m];
+			PC++;
 			break;
 		// MUL
 		case 15:
 			RF[IR.r] = RF[IR.l] * RF[IR.m];
+			PC++;
 			break;
 		// DIV
 		case 16:
 			RF[IR.r] = RF[IR.l] / RF[IR.m];
+			PC++;
 			break;
 		// MOD
 		case 17:
 			RF[IR.r] = RF[IR.l] % RF[IR.m];
+			PC++;
 			break;
 		// EQL
 		case 18:
 			RF[IR.r] = (RF[IR.l] == RF[IR.m]) ? 1 : 0;
+			PC++;
 			break;
 		// NEQ
 		case 19:
 			RF[IR.r] = (RF[IR.l] != RF[IR.m]) ? 1 : 0;
+			PC++;
 			break;
 		// LSS
 		case 20:
 			RF[IR.r] = (RF[IR.l] < RF[IR.m]) ? 1 : 0;
+			PC++;
 			break;
 		// LEQ
 		case 21:
 			RF[IR.r] = (RF[IR.l] <= RF[IR.m]) ? 1 : 0;
+			PC++;
 			break;
 		// GTR
 		case 22:
 			RF[IR.r] = (RF[IR.l] > RF[IR.m]) ? 1 : 0;
+			PC++;
 			break;
 		// GEQ
 		case 23:
 			RF[IR.r] = (RF[IR.l] >= RF[IR.m]) ? 1 : 0;
+			PC++;
 			break;
-		case default:
+		default:
 			break;
 		}
-		
+
 		// We only want to print when not halt or when instr is HALT(valid state)
 		// All other halted states are errors and will break if printed.
 		if (printFlag && (!halt || opname[IR.opcode] == "HAL"))
 		{
 			print_execution(line, opname[IR.opcode], IR, PC, BP, SP, stack, RF);
 		}
-		
+
 		line++;
-		PC++;
 	}
 
 	free(stack);
 	free(RF);
-}
-
-// Returns: instruction as defined in 'compiler.h'
-// example call:
-// 		fetch(IS, PC);
-instruction fetch(instruction *IS, int PC)
-{
-	return IS[PC];
 }
