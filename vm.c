@@ -2,15 +2,6 @@
 // Spring 2022
 // Authors: Justice Smith, Kevin Estrella
 
-/*
-	You can use these two print statements for the errors:
-		printf("Virtual Machine Error: Stack Overflow Error\n");
-		printf("Virtual Machine Error: Out of Bounds Access Error\n");
-*/
-
-// TODO
-// test compilation and output
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
