@@ -164,6 +164,12 @@ void execute_program(instruction *code, int printFlag)
 				printf("Virtual Machine Error: Stack Overflow Error\n");
 				halt = 1;
 			}
+			else
+			{
+				stack[SP - 1 + IR.m] = RF[SP - 1 + IR.m];
+				stack[SP - 2 + IR.m] = RF[SP - 2 + IR.m];
+				stack[SP - 3 + IR.m] = RF[SP - 3 + IR.m] + 1;
+			}
 			PC++;
 			break;
 		// JMP
