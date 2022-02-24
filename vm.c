@@ -107,17 +107,18 @@ void execute_program(instruction *code, int printFlag)
 		// LIT
 		case 1:
 			RF[IR.r] = IR.m;
-			PC++;
 			break;
 		// RET
 		case 2:
 			// Return from current procedure (X) to the last procedure (Y).
 			// SP = the index of the end of Y’s AR (BP + 1)
 			SP = BP + 1;
-			// BP = dynamic link value from X’s AR
-			BP = RF[SP - 2];
 			// PC = return address value from X’s AR
-			PC = RF[SP - 3];
+			PC = stack[BP - 2];
+
+			// !!NOTE must change BP last or dep issue with setting above
+			// BP = dynamic link value from X’s AR
+			BP = stack[BP - 1];
 			break;
 		// LOD
 		case 3:
@@ -129,7 +130,6 @@ void execute_program(instruction *code, int printFlag)
 			}
 			// Load value to register IR.r from the stack location at offset RF[IR.m] from L levels up
 			RF[IR.r] = stack[base(IR.l, BP, stack) - RF[IR.m]];
-			PC++;
 			break;
 		// STO
 		case 4:
@@ -140,37 +140,28 @@ void execute_program(instruction *code, int printFlag)
 				break;
 			}
 			stack[base(IR.l, BP, stack) - RF[IR.m]] = RF[IR.r];
-			PC++;
 			break;
 		// CAL
 		case 5:
-			// 3 values in the AR:
-			// 1st - static link = base(L, BP, stack)
-			RF[SP - 1] = base(IR.l, BP, stack);
-			// 2nd - dynamic link = BP
-			RF[SP - 2] = BP;
-			// 3rd - return address = PC
-			RF[SP - 3] = PC;
-			// After creating the AR:
-			// BP = the index of the first entry of the new AR
+			// static link
+			stack[SP - 1] = base(IR.l, BP, stack);
+			// dynamic link
+			stack[SP - 2] = BP;
+			// return address
+			stack[SP - 3] = PC + 1;
+
 			BP = SP - 1;
 			PC = IR.m;
 			break;
 		// INC
 		case 6:
-			SP = SP - IR.m;
+			// Account for linking indices ??
+			SP -= IR.m;
 			if (SP < 0)
 			{
 				printf("Virtual Machine Error: Stack Overflow Error\n");
 				halt = 1;
 			}
-			else
-			{
-				stack[SP - 1 + IR.m] = RF[SP - 1 + IR.m];
-				stack[SP - 2 + IR.m] = RF[SP - 2 + IR.m];
-				stack[SP - 3 + IR.m] = RF[SP - 3 + IR.m] + 1;
-			}
-			PC++;
 			break;
 		// JMP
 		case 7:
@@ -178,89 +169,85 @@ void execute_program(instruction *code, int printFlag)
 			break;
 		// JPC
 		case 8:
-			PC++;
 			if (RF[IR.r] == 0)
 			{
 				PC = IR.m;
+			}
+			else
+			{
+				PC++;
 			}
 			break;
 		// WRT
 		case 9:
 			printf("%d", RF[IR.r]);
-			PC++;
 			break;
 		// RED
 		case 10:
 			scanf("%d", &RF[IR.r]);
-			PC++;
 			break;
 		// HAL
 		case 11:
 			halt = 1;
-			PC++;
 			break;
 		// NEG
 		case 12:
-			RF[IR.r] = ~RF[IR.r];
-			PC++;
+			RF[IR.r] = RF[IR.r] * -1;
 			break;
 		// ADD
 		case 13:
 			RF[IR.r] = RF[IR.l] + RF[IR.m];
-			PC++;
 			break;
 		// SUB
 		case 14:
 			RF[IR.r] = RF[IR.l] - RF[IR.m];
-			PC++;
 			break;
 		// MUL
 		case 15:
 			RF[IR.r] = RF[IR.l] * RF[IR.m];
-			PC++;
 			break;
 		// DIV
 		case 16:
 			RF[IR.r] = RF[IR.l] / RF[IR.m];
-			PC++;
 			break;
 		// MOD
 		case 17:
 			RF[IR.r] = RF[IR.l] % RF[IR.m];
-			PC++;
 			break;
 		// EQL
 		case 18:
 			RF[IR.r] = (RF[IR.l] == RF[IR.m]) ? 1 : 0;
-			PC++;
 			break;
 		// NEQ
 		case 19:
 			RF[IR.r] = (RF[IR.l] != RF[IR.m]) ? 1 : 0;
-			PC++;
 			break;
 		// LSS
 		case 20:
 			RF[IR.r] = (RF[IR.l] < RF[IR.m]) ? 1 : 0;
-			PC++;
 			break;
 		// LEQ
 		case 21:
 			RF[IR.r] = (RF[IR.l] <= RF[IR.m]) ? 1 : 0;
-			PC++;
 			break;
 		// GTR
 		case 22:
 			RF[IR.r] = (RF[IR.l] > RF[IR.m]) ? 1 : 0;
-			PC++;
 			break;
 		// GEQ
 		case 23:
 			RF[IR.r] = (RF[IR.l] >= RF[IR.m]) ? 1 : 0;
-			PC++;
 			break;
 		default:
 			break;
+		}
+
+		if (!(IR.opcode == 2 || // RET
+			  IR.opcode == 5 || // CAL
+			  IR.opcode == 7 || // JMP
+			  IR.opcode == 8))	// JPC
+		{
+			PC++;
 		}
 
 		// We only want to print when not halt or when instr is HALT(valid state)
