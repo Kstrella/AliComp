@@ -13,7 +13,7 @@ int lex_index;
 //int alphatoken();
 lexeme numbertoken(char * value);
 lexeme symboltoken(char * name);
-lexeme isReserved(char *name);
+token_type isReserved(char *name);
 void printlexerror(int type);
 void printtokens();
 int comment();
@@ -81,7 +81,7 @@ lexeme symboltoken(char * name)
 
 }
 ////////////////////////////////////////////////////
-lexeme isReserved(char * name) 
+token_type isReserved(char * name) 
 {
   lexeme ret;
   	if (strcmp(name, "var") == 0)
@@ -106,10 +106,13 @@ lexeme isReserved(char * name)
     	ret.type = whilesym;
 	else
   {
-    strcpy(ret.name, name);
-    ret.type = identsym;
+  return 0;
   }
-  return ret;
+	list[lex_index++].type = ret.type;
+  	list[lex_index].value = ret.type;
+  	strcpy(list[lex_index].name, name);
+
+  return 1;
 }
 
 lexeme numbertoken (char * value) 
