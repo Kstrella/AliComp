@@ -16,6 +16,13 @@ int symboltoken();
 int comment();
 int reservedcheck(char *buffer);
 
+
+////////////////
+lexeme makeNumberLexeme(char * value);
+lexeme makeLexeme(char * name);
+lexeme makeSymbolLexeme(char * name);
+///////////////
+
 void printlexerror(int type);
 void printtokens();
 
@@ -29,6 +36,58 @@ lexeme *lexanalyzer(char *input, int printFlag)
 		printtokens();
 	list[lex_index++].type = -1;
 	return list;
+}
+
+
+//////////////////////////////////////////////////////
+lexeme makeSymbolLexeme(char * name) 
+{
+  lexeme ret;
+  	if (strcmp(name, ".") == 0)
+    	ret.type = periodsym;
+  	else if (strcmp(name, "[") == 0)
+     	ret.type = lbracketsym;
+ 	else if (strcmp(name, "]") == 0)
+		ret.type = rbracketsym;
+	else if (strcmp(name, ",") == 0)
+    	ret.type = commasym;
+	else if (strcmp(name, ";") == 0)
+    	ret.type = semicolonsym;
+	else if (strcmp(name, ":=") == 0) 
+    	ret.type = assignsym;
+	else if (strcmp(name, "?") == 0) 
+    	ret.type = questionsym;
+	else if (strcmp(name, ":") == 0) 
+    	ret.type = colonsym;
+	else if (strcmp(name, "(") == 0)
+    	ret.type = lparenthesissym;
+    else if (strcmp(name, ")") == 0) 
+    	ret.type = rparenthesissym;
+	else if (strcmp(name, "==") == 0) 
+    	ret.type = eqlsym;
+	else if (strcmp(name, "<>") == 0) 
+    	ret.type = neqsym;
+	else if (strcmp(name, "%") == 0) 
+    	ret.type = modsym;
+	else if (strcmp(name, "<") == 0)
+    	ret.type = lsssym;
+	else if (strcmp(name, "/") == 0) 
+    	ret.type = divsym;
+	else if (strcmp(name, "<=") == 0)
+    	ret.type = leqsym;
+	else if (strcmp(name, "*") == 0)
+    	ret.type = multsym;
+	else if (strcmp(name, ">") == 0)
+    	ret.type = gtrsym;
+	else if (strcmp(name, "-") == 0)
+    	ret.type = subsym;
+	else if (strcmp(name, ">=") == 0)
+    	ret.type = geqsym;
+	else if (strcmp(name, "+") == 0)
+    	ret.type = addsym;
+
+	return ret;
+
 }
 
 void printtokens()
