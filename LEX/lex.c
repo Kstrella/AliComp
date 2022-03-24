@@ -15,6 +15,7 @@ int numbertoken();
 int symboltoken();
 int comment();
 int reservedcheck(char *buffer);
+
 void printlexerror(int type);
 void printtokens();
 
@@ -146,8 +147,8 @@ void printtokens()
 	}
 	printf("\n");
 }
-
-void printlexerror(int type)
+//////////////////////////////////////////////////////////////////////
+void printlexerror(int type) //done
 {
 	if (type == 1)
 		printf("Lexical Analyzer Error: Invalid Identifier\n");
@@ -163,3 +164,4 @@ void printlexerror(int type)
 	free(list);
 	return;
 }
+//////////////////////////////////////////////////////////////////////
