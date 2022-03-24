@@ -11,21 +11,12 @@ lexeme *list;
 int lex_index;
 
 //int alphatoken();
-//int numbertoken();
-//int symboltoken();
-int comment();
-int reservedcheck(char *buffer);
-
-
-////////////////
-lexeme makeNumberLexeme(char * value);
-lexeme makeLexeme(char * name);
-lexeme makeSymbolLexeme(char * name);
-///////////////
-
+lexeme numbertoken(char * value);
+lexeme symboltoken(char * name);
+lexeme isReserved(char *name);
 void printlexerror(int type);
 void printtokens();
-
+int comment();
 
 lexeme *lexanalyzer(char *input, int printFlag)
 {
@@ -40,7 +31,7 @@ lexeme *lexanalyzer(char *input, int printFlag)
 
 
 //////////////////////////////////////////////////////
-lexeme makeSymbolLexeme(char * name) 
+lexeme symboltoken(char * name) 
 {
   lexeme ret;
   	if (strcmp(name, ".") == 0)
@@ -90,7 +81,7 @@ lexeme makeSymbolLexeme(char * name)
 
 }
 ////////////////////////////////////////////////////
-lexeme makeLexeme(char * name) 
+lexeme isReserved(char * name) 
 {
   lexeme ret;
   	if (strcmp(name, "var") == 0)
@@ -121,13 +112,7 @@ lexeme makeLexeme(char * name)
   return ret;
 }
 
-int reservedcheck(char *buffer)
-{
-
-
-}
-
-lexeme makeNumberLexeme(char * value) 
+lexeme numbertoken (char * value) 
 {
   lexeme ret;
   ret.value = atoi(value);
