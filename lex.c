@@ -89,6 +89,38 @@ lexeme makeSymbolLexeme(char * name)
 	return ret;
 
 }
+////////////////////////////////////////////////////
+lexeme makeLexeme(char * name) 
+{
+  lexeme ret;
+  	if (strcmp(name, "var") == 0)
+    	ret.type = varsym;
+  	else if (strcmp(name, "procedure") == 0)
+    	ret.type = procsym;
+  	else if (strcmp(name, "call") == 0)
+ 		ret.type = callsym;
+	else if (strcmp(name, "begin") == 0)
+    	ret.type = beginsym;
+	else if (strcmp(name, "end") == 0)
+    	ret.type = endsym;
+	else if (strcmp(name, "if") == 0)
+    	ret.type = ifsym;
+	else if (strcmp(name, "do") == 0)
+    	ret.type = dosym;
+	else if (strcmp(name, "read") == 0)
+    	ret.type = readsym;
+	else if (strcmp(name, "write") == 0)
+    	ret.type = writesym;
+	else if (strcmp(name, "while") == 0)
+    	ret.type = whilesym;
+	else
+  {
+    strcpy(ret.name, name);
+    ret.type = identsym;
+  }
+  return ret;
+}
+
 
 void printtokens()
 {
