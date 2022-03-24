@@ -10,9 +10,9 @@
 lexeme *list;
 int lex_index;
 
-int alphatoken();
-int numbertoken();
-int symboltoken();
+//int alphatoken();
+//int numbertoken();
+//int symboltoken();
 int comment();
 int reservedcheck(char *buffer);
 
@@ -121,7 +121,12 @@ lexeme makeLexeme(char * name)
   return ret;
 }
 
-////////////////////////////////////////////////////
+int reservedcheck(char *buffer)
+{
+
+
+}
+
 lexeme makeNumberLexeme(char * value) 
 {
   lexeme ret;
@@ -129,7 +134,8 @@ lexeme makeNumberLexeme(char * value)
   ret.type = numbersym;
   return ret;
 }
-////////////////////////////////////////////////////
+
+
 
 
 void printtokens()
