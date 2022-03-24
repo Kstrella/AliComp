@@ -121,6 +121,16 @@ lexeme makeLexeme(char * name)
   return ret;
 }
 
+////////////////////////////////////////////////////
+lexeme makeNumberLexeme(char * value) 
+{
+  lexeme ret;
+  ret.value = atoi(value);
+  ret.type = numbersym;
+  return ret;
+}
+////////////////////////////////////////////////////
+
 
 void printtokens()
 {
