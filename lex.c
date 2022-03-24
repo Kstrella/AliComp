@@ -10,14 +10,12 @@
 lexeme *list;
 int lex_index;
 
-int alphatoken();
-int numbertoken();
-int symboltoken();
-int comment();
-int reservedcheck(char *buffer);
-
+lexeme numbertoken(char *value);
+lexeme symboltoken(char *name);
+int isReserved(char *name);
 void printlexerror(int type);
 void printtokens();
+void reset_buf(char *buf, int *idx);
 
 lexeme *lexanalyzer(char *input, int printFlag)
 {
@@ -192,6 +190,97 @@ void reset_buf(char *buf, int *idx)
 	buf[idx] = '\0';
 	*idx = 0;
 	strcpy(buf, "           ");
+}
+
+lexeme symboltoken(char *name)
+{
+	lexeme ret;
+	if (strcmp(name, ".") == 0)
+		ret.type = periodsym;
+	else if (strcmp(name, "[") == 0)
+		ret.type = lbracketsym;
+	else if (strcmp(name, "]") == 0)
+		ret.type = rbracketsym;
+	else if (strcmp(name, ",") == 0)
+		ret.type = commasym;
+	else if (strcmp(name, ";") == 0)
+		ret.type = semicolonsym;
+	else if (strcmp(name, ":=") == 0)
+		ret.type = assignsym;
+	else if (strcmp(name, "?") == 0)
+		ret.type = questionsym;
+	else if (strcmp(name, ":") == 0)
+		ret.type = colonsym;
+	else if (strcmp(name, "(") == 0)
+		ret.type = lparenthesissym;
+	else if (strcmp(name, ")") == 0)
+		ret.type = rparenthesissym;
+	else if (strcmp(name, "==") == 0)
+		ret.type = eqlsym;
+	else if (strcmp(name, "<>") == 0)
+		ret.type = neqsym;
+	else if (strcmp(name, "%") == 0)
+		ret.type = modsym;
+	else if (strcmp(name, "<") == 0)
+		ret.type = lsssym;
+	else if (strcmp(name, "/") == 0)
+		ret.type = divsym;
+	else if (strcmp(name, "<=") == 0)
+		ret.type = leqsym;
+	else if (strcmp(name, "*") == 0)
+		ret.type = multsym;
+	else if (strcmp(name, ">") == 0)
+		ret.type = gtrsym;
+	else if (strcmp(name, "-") == 0)
+		ret.type = subsym;
+	else if (strcmp(name, ">=") == 0)
+		ret.type = geqsym;
+	else if (strcmp(name, "+") == 0)
+		ret.type = addsym;
+
+	return ret;
+}
+
+int isReserved(char *name)
+{
+	lexeme ret;
+	if (strcmp(name, "var") == 0)
+		ret.type = varsym;
+	else if (strcmp(name, "procedure") == 0)
+		ret.type = procsym;
+	else if (strcmp(name, "call") == 0)
+		ret.type = callsym;
+	else if (strcmp(name, "begin") == 0)
+		ret.type = beginsym;
+	else if (strcmp(name, "end") == 0)
+		ret.type = endsym;
+	else if (strcmp(name, "if") == 0)
+		ret.type = ifsym;
+	else if (strcmp(name, "do") == 0)
+		ret.type = dosym;
+	else if (strcmp(name, "read") == 0)
+		ret.type = readsym;
+	else if (strcmp(name, "write") == 0)
+		ret.type = writesym;
+	else if (strcmp(name, "while") == 0)
+		ret.type = whilesym;
+	else
+	{
+		return 0;
+	}
+	list[lex_index++].type = ret.type;
+	list[lex_index].value = ret.type;
+	strcpy(list[lex_index].name, name);
+
+	return 1;
+}
+
+lexeme numbertoken(char *value)
+{
+	lexeme ret;
+	ret.value = atoi(value);
+	ret.type = numbersym;
+	return ret;
 }
 
 void printtokens()
