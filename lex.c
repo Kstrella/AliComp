@@ -10,15 +10,16 @@
 lexeme *list;
 int lex_index;
 
-lexeme numbertoken(char *value);
-lexeme symboltoken(char *name);
+int alphatoken(char *input, int idx);
+int numbertoken(char *input, int idx);
+int symboltoken(char *input, int idx);
 int isReserved(char *name);
 void printlexerror(int type);
 void printtokens();
-void reset_buf(char *buf, int *idx);
 
 lexeme *lexanalyzer(char *input, int printFlag)
 {
+
 	list = malloc(sizeof(lexeme) * MAX_NUMBER_TOKENS);
 	lex_index = 0;
 
@@ -26,261 +27,350 @@ lexeme *lexanalyzer(char *input, int printFlag)
 		printtokens();
 	list[lex_index++].type = -1;
 
-	int file_len = strlen(input);
-	char ident_buf[MAX_IDENT_LEN + 1];
-	int ident_buf_idx = 0;
+	int input_len = strlen(input);
+	int input_idx = 0;
 
-	// iterate over input
-	while (file_index <= file_len)
+	char in;
+
+	while (input_idx < input_len)
 	{
-		// check for space/cntrl
-		if (isspace(input[file_index]) || iscntrl(input[file_index])
+		in = input[input_idx];
+		// printf("%c\n", in);
+		if (isspace(in) || iscntrl(in))
 		{
-			lex_index++;
+			input_idx++;
 		}
-		else if (isalpha(input[file_index]))
+		else if (isalpha(in))
 		{
-			ident_buf[ident_buf_idx++] = input[file_index++];
+			input_idx = alphatoken(input, input_idx);
 
-			while (ident_buf_idx < MAX_NUM_LEN &&
-				   (isdigit(input[file_index]) ||
-					isalpha(input[file_index])))
+			// ident len > 11
+			if (input_idx == -1)
 			{
-				ident_buf[ident_buf_idx++] = input[file_index++];
+				printlexerror(3);
+				return NULL;
 			}
+		}
+		else if (isdigit(in))
+		{
+			input_idx = numbertoken(input, input_idx);
 
-			if (ident_buf_idx > MAX_NUM_LEN)
+			// Num len > 5
+			if (input_idx == -1)
 			{
 				printlexerror(1);
 				return NULL;
 			}
-			else
-			{
-				if (!isReserved(ident_buf))
-				{
-					list[lex_index].type = identsym;
-					list[lex_index].value = identsym;
-					strcpy(list[lex_index++].name, ident_buf);
-				}
-			}
-		}
-		else if (isdigit(input[file_index]))
-		{
-			ident_buf[ident_buf_idx++] = input[file_index++];
-
-			while (ident_buf_idx < MAX_NUM_LEN && isdigit(input[file_index]))
-			{
-				ident_buf[ident_buf_idx++] = input[file_index++];
-			}
-			if (ident_buf_idx >= MAX_NUM_LEN)
+			// ident starts w num
+			else if (input_idx == -2)
 			{
 				printlexerror(2);
 				return NULL;
 			}
-			else if (isalpha(input[file_index])
-			{
-				printlexerror(1);
-				return NULL;
-			}
-			else
-			{
-				list[lex_index].type = numbersym;
-				strcpy(list[lex_index].name, "numbersym");
-				list[lex_index++].value = atoi(ident_buf);
-
-				reset_buf(ident_buf, &ident_buf_idx);
-			}
-		}	
-		else // sym
+		}
+		else // symbol
 		{
-			int temp_idx = file_index;
-			switch (input[file_index])
+			input_idx = symboltoken(input, input_idx);
+
+			if (input_idx == -1)
 			{
-			case '.':
-				list[lex_index++] = symboltoken('.');
-			case '[':
-				list[lex_index++] = symboltoken('[');
-			case ']':
-				list[lex_index++] = symboltoken(']');
-			case ',':
-				list[lex_index++] = symboltoken(',');
-			case ';':
-				list[lex_index++] = symboltoken(';');
-			case ':':
-				if (input[file_index + 1] == '=')
-				{
-					list[lex_index++] = symboltoken(":=");
-				}
-				else
-				{
-					list[lex_index++] symboltoken(':');
-				}
-			case '?':
-				list[lex_index++] = symboltoken('?');
-			case '(':
-				list[lex_index++] = symboltoken('(');
-			case ')':
-				list[lex_index++] = symboltoken(')');
-			case '=':
-				if (input[file_index + 1] == '=')
-				{
-					list[lex_index++] = symboltoken('==');
-				}
-				else
-				{
-					printlexerror(4);
-					return NULL;
-				}
-			case '<':
-				if (input[file_index + 1] == '=')
-				{
-					list[lex_index++] = symboltoken('<=');
-				}
-				else if (input[file_index + 1] == '>')
-				{
-					list[lex_index++] = symboltoken('<>');
-				}
-				else
-				{
-					list[lex_index++] = symboltoken('<');
-				}
-			case '>':
-				if (input[file_index + 1] == '=')
-				{
-					list[lex_index++] = symboltoken('>=');
-				}
-				else
-				{
-					list[lex_index++] = symboltoken('>');
-				}
-			case '%':
-				list[lex_index++] = symboltoken('%');
-			case '/':
-				if (input[file_index + 1] == '/')
-				{
-					file_index++;
-					while (input[file_index] != '\n')
-					{
-						file_index++;
-					}
-				}
-				else
-				{
-					list[lex_index++] = symboltoken('/');
-				}
-			case '*':
-				list[lex_index++] = symboltoken('*');
-			case '-':
-				list[lex_index++] = symboltoken('-');
-			case '+':
-				list[lex_index++] = symboltoken('+');
-			default:
 				printlexerror(4);
 				return NULL;
 			}
-
-			file_index++;
 		}
 	}
+
 	return list;
 }
 
-void reset_buf(char *buf, int *idx)
+int alphatoken(char *input, int idx)
 {
-	buf[idx] = '\0';
-	*idx = 0;
-	strcpy(buf, "           ");
+	char *buf = malloc(sizeof(char) * MAX_IDENT_LEN);
+	int buf_idx = 0;
+
+	buf[buf_idx++] = input[idx++];
+
+	while (
+		buf_idx < MAX_IDENT_LEN &&
+		(isalpha(input[idx]) || isdigit(input[idx])))
+	{
+		buf[buf_idx++] = input[idx++];
+	}
+
+	if (buf_idx > MAX_IDENT_LEN)
+	{
+		// ident len error
+		free(buf);
+		return -1;
+	}
+	else // broke on space/cntrl/sym
+	{
+		if (!isReserved(buf))
+		{
+			// Add non-reserved word to lexeme list as valid identifier
+			strcpy(list[lex_index].name, buf);
+			list[lex_index].value = identsym;
+			list[lex_index].type = identsym;
+			lex_index++;
+		}
+	}
+
+	// return to next index
+	free(buf);
+	return idx + 1;
 }
 
-lexeme symboltoken(char *name)
+int numbertoken(char *input, int idx)
 {
-	lexeme ret;
-	if (strcmp(name, ".") == 0)
-		ret.type = periodsym;
-	else if (strcmp(name, "[") == 0)
-		ret.type = lbracketsym;
-	else if (strcmp(name, "]") == 0)
-		ret.type = rbracketsym;
-	else if (strcmp(name, ",") == 0)
-		ret.type = commasym;
-	else if (strcmp(name, ";") == 0)
-		ret.type = semicolonsym;
-	else if (strcmp(name, ":=") == 0)
-		ret.type = assignsym;
-	else if (strcmp(name, "?") == 0)
-		ret.type = questionsym;
-	else if (strcmp(name, ":") == 0)
-		ret.type = colonsym;
-	else if (strcmp(name, "(") == 0)
-		ret.type = lparenthesissym;
-	else if (strcmp(name, ")") == 0)
-		ret.type = rparenthesissym;
-	else if (strcmp(name, "==") == 0)
-		ret.type = eqlsym;
-	else if (strcmp(name, "<>") == 0)
-		ret.type = neqsym;
-	else if (strcmp(name, "%") == 0)
-		ret.type = modsym;
-	else if (strcmp(name, "<") == 0)
-		ret.type = lsssym;
-	else if (strcmp(name, "/") == 0)
-		ret.type = divsym;
-	else if (strcmp(name, "<=") == 0)
-		ret.type = leqsym;
-	else if (strcmp(name, "*") == 0)
-		ret.type = multsym;
-	else if (strcmp(name, ">") == 0)
-		ret.type = gtrsym;
-	else if (strcmp(name, "-") == 0)
-		ret.type = subsym;
-	else if (strcmp(name, ">=") == 0)
-		ret.type = geqsym;
-	else if (strcmp(name, "+") == 0)
-		ret.type = addsym;
+	char *buf = malloc(sizeof(char) * MAX_IDENT_LEN);
+	int buf_idx = 0;
 
-	return ret;
+	buf[buf_idx++] = input[idx++];
+
+	while (
+		buf_idx < MAX_NUMBER_LEN &&
+		isdigit(input[idx]))
+	{
+		buf[buf_idx++] = input[idx++];
+	}
+
+	if (buf_idx >= MAX_NUMBER_LEN)
+	{
+		// invalid num len error
+		return -2;
+	}
+	else if (isalpha(input[idx]))
+	{
+		// ident starts with num error
+		return -1;
+	}
+	else // space/cntrl/sym break valid, e.g. 'end of token'
+	{
+		strcpy(list[lex_index].name, "numbersym");
+		list[lex_index].value = atoi(buf);
+		list[lex_index].type = numbersym;
+		lex_index++;
+	}
+
+	// return to next index
+	free(buf);
+	return idx + 1;
+}
+
+int symboltoken(char *input, int idx)
+{
+	switch (input[idx])
+	{
+	case '.':
+		strcpy(list[lex_index].name, ".");
+		list[lex_index].value = periodsym;
+		list[lex_index].type = periodsym;
+		break;
+	case '[':
+		strcpy(list[lex_index].name, "[");
+		list[lex_index].value = lbracketsym;
+		list[lex_index].type = lbracketsym;
+		break;
+	case ']':
+		strcpy(list[lex_index].name, "]");
+		list[lex_index].value = rbracketsym;
+		list[lex_index].type = rbracketsym;
+		break;
+	case ',':
+		strcpy(list[lex_index].name, ",");
+		list[lex_index].value = commasym;
+		list[lex_index].type = commasym;
+		break;
+	case ';':
+		strcpy(list[lex_index].name, ";");
+		list[lex_index].value = semicolonsym;
+		list[lex_index].type = semicolonsym;
+		break;
+	case ':':
+		if (input[idx + 1] == '=')
+		{
+			strcpy(list[lex_index].name, ":=");
+			list[lex_index].value = assignsym;
+			list[lex_index].type = assignsym;
+			idx++;
+		}
+		else
+		{
+			strcpy(list[lex_index].name, ":");
+			list[lex_index].value = colonsym;
+			list[lex_index].type = colonsym;
+		}
+
+		break;
+	case '?':
+		strcpy(list[lex_index].name, "?");
+		list[lex_index].value = questionsym;
+		list[lex_index].type = questionsym;
+		break;
+	case '(':
+		strcpy(list[lex_index].name, "(");
+		list[lex_index].value = lparenthesissym;
+		list[lex_index].type = lparenthesissym;
+		break;
+	case ')':
+		strcpy(list[lex_index].name, ")");
+		list[lex_index].value = rparenthesissym;
+		list[lex_index].type = rparenthesissym;
+		break;
+	case '<':
+		if (input[idx + 1] == '>')
+		{
+			strcpy(list[lex_index].name, "<>");
+			list[lex_index].value = neqsym;
+			list[lex_index].type = neqsym;
+			idx++;
+		}
+		else if (input[idx + 1] == '=')
+		{
+			strcpy(list[lex_index].name, "<=");
+			list[lex_index].value = neqsym;
+			list[lex_index].type = neqsym;
+			idx++;
+		}
+		else
+		{
+			strcpy(list[lex_index].name, "<");
+			list[lex_index].value = lsssym;
+			list[lex_index].type = lsssym;
+		}
+
+		break;
+	case '>':
+		if (input[idx + 1] == '=')
+		{
+			strcpy(list[lex_index].name, ">=");
+			list[lex_index].value = geqsym;
+			list[lex_index].type = geqsym;
+			idx++;
+		}
+		else
+		{
+			strcpy(list[lex_index].name, ">");
+			list[lex_index].value = gtrsym;
+			list[lex_index].type = gtrsym;
+		}
+
+		break;
+	case '%':
+		strcpy(list[lex_index].name, "%");
+		list[lex_index].value = modsym;
+		list[lex_index].type = modsym;
+		break;
+	case '/':
+		if (input[idx + 1] == '/')
+		{
+			idx++;
+			while (
+				!(input[idx + 1] == '\r' ||
+				  input[idx + 1] == '\n' ||
+				  input[idx + 1] == '\0'))
+			{
+				idx++;
+			}
+
+			// reached end of comment
+			idx++;
+		}
+		else
+		{
+			strcpy(list[lex_index].name, "/");
+			list[lex_index].value = divsym;
+			list[lex_index].type = divsym;
+		}
+
+		break;
+	case '*':
+		strcpy(list[lex_index].name, "*");
+		list[lex_index].value = multsym;
+		list[lex_index].type = multsym;
+		break;
+	case '-':
+		strcpy(list[lex_index].name, "-");
+		list[lex_index].value = subsym;
+		list[lex_index].type = subsym;
+	case '+':
+		strcpy(list[lex_index].name, "+");
+		list[lex_index].value = addsym;
+		list[lex_index].type = addsym;
+		break;
+	case '=':
+		if (input[idx + 1] == '=')
+		{
+			strcpy(list[lex_index].name, "==");
+			list[lex_index].value = eqlsym;
+			list[lex_index].type = eqlsym;
+			idx++;
+		}
+		else
+		{
+			return -1;
+		}
+		break;
+	default:
+		return -1;
+	}
+
+	lex_index++;
+
+	// return to next index
+	return idx + 1;
 }
 
 int isReserved(char *name)
 {
-	lexeme ret;
+	token_type type;
+
 	if (strcmp(name, "var") == 0)
-		ret.type = varsym;
+		type = varsym;
 	else if (strcmp(name, "procedure") == 0)
-		ret.type = procsym;
+		type = procsym;
 	else if (strcmp(name, "call") == 0)
-		ret.type = callsym;
+		type = callsym;
 	else if (strcmp(name, "begin") == 0)
-		ret.type = beginsym;
+		type = beginsym;
 	else if (strcmp(name, "end") == 0)
-		ret.type = endsym;
+		type = endsym;
 	else if (strcmp(name, "if") == 0)
-		ret.type = ifsym;
+		type = ifsym;
 	else if (strcmp(name, "do") == 0)
-		ret.type = dosym;
+		type = dosym;
 	else if (strcmp(name, "read") == 0)
-		ret.type = readsym;
+		type = readsym;
 	else if (strcmp(name, "write") == 0)
-		ret.type = writesym;
+		type = writesym;
 	else if (strcmp(name, "while") == 0)
-		ret.type = whilesym;
+		type = whilesym;
 	else
-	{
 		return 0;
-	}
-	list[lex_index++].type = ret.type;
-	list[lex_index].value = ret.type;
+
+	// Add reserved word to lexeme list
 	strcpy(list[lex_index].name, name);
+	list[lex_index].value = type;
+	list[lex_index].type = type;
 
 	return 1;
 }
 
-lexeme numbertoken(char *value)
+void printlexerror(int type)
 {
-	lexeme ret;
-	ret.value = atoi(value);
-	ret.type = numbersym;
-	return ret;
+	if (type == 1)
+		printf("Lexical Analyzer Error: Invalid Identifier\n");
+	else if (type == 2)
+		printf("Lexical Analyzer Error: Number Length\n");
+	else if (type == 3)
+		printf("Lexical Analyzer Error: Identifier Length\n");
+	else if (type == 4)
+		printf("Lexical Analyzer Error: Invalid Symbol\n");
+	else
+		printf("Implementation Error: Unrecognized Error Type\n");
+
+	free(list);
+	return;
 }
 
 void printtokens()
@@ -399,21 +489,3 @@ void printtokens()
 	}
 	printf("\n");
 }
-//////////////////////////////////////////////////////////////////////
-void printlexerror(int type) // done
-{
-	if (type == 1)
-		printf("Lexical Analyzer Error: Invalid Identifier\n");
-	else if (type == 2)
-		printf("Lexical Analyzer Error: Number Length\n");
-	else if (type == 3)
-		printf("Lexical Analyzer Error: Identifier Length\n");
-	else if (type == 4)
-		printf("Lexical Analyzer Error: Invalid Symbol\n");
-	else
-		printf("Implementation Error: Unrecognized Error Type\n");
-
-	free(list);
-	return;
-}
-//////////////////////////////////////////////////////////////////////

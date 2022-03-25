@@ -1,0 +1,38 @@
+Lexeme Table:
+lexeme		token type
+          x	20
+          [	3
+          3	22
+          ;	9
+       func	20
+        err	err
+         <>	23
+          ?	13
+    problem	20
+          :	15
+      bueno	20
+          y	20
+          2	22
+         :=	11
+          4	22
+          *	28
+          8	22
+          %	24
+         11	22
+          >	29
+          <	25
+         ==	21
+      candy	20
+          :	15
+          /	26
+          *	28
+          *	28
+          /	26
+         <>	23
+         ==	21
+         >=	31
+          +	32
+          +	32
+          .	1
+
+Parser Error: Procedures may not be assigned to, read, or used in arithmetic
