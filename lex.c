@@ -1,3 +1,5 @@
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -23,10 +25,6 @@ lexeme *lexanalyzer(char *input, int printFlag)
 	list = malloc(sizeof(lexeme) * MAX_NUMBER_TOKENS);
 	lex_index = 0;
 
-	if (printFlag)
-		printtokens();
-	list[lex_index++].type = -1;
-
 	int input_len = strlen(input);
 	int input_idx = 0;
 
@@ -35,7 +33,7 @@ lexeme *lexanalyzer(char *input, int printFlag)
 	while (input_idx < input_len)
 	{
 		in = input[input_idx];
-		// printf("%c\n", in);
+
 		if (isspace(in) || iscntrl(in))
 		{
 			input_idx++;
@@ -80,6 +78,10 @@ lexeme *lexanalyzer(char *input, int printFlag)
 		}
 	}
 
+	if (printFlag)
+		printtokens();
+	list[lex_index++].type = -1;
+
 	return list;
 }
 
@@ -111,18 +113,18 @@ int alphatoken(char *input, int idx)
 			strcpy(list[lex_index].name, buf);
 			list[lex_index].value = identsym;
 			list[lex_index].type = identsym;
-			lex_index++;
 		}
+		lex_index++;
 	}
 
 	// return to next index
 	free(buf);
-	return idx + 1;
+	return idx;
 }
 
 int numbertoken(char *input, int idx)
 {
-	char *buf = malloc(sizeof(char) * MAX_IDENT_LEN);
+	char *buf = malloc(sizeof(char) * MAX_NUMBER_LEN);
 	int buf_idx = 0;
 
 	buf[buf_idx++] = input[idx++];
@@ -137,11 +139,13 @@ int numbertoken(char *input, int idx)
 	if (buf_idx >= MAX_NUMBER_LEN)
 	{
 		// invalid num len error
+		free(buf);
 		return -2;
 	}
 	else if (isalpha(input[idx]))
 	{
 		// ident starts with num error
+		free(buf);
 		return -1;
 	}
 	else // space/cntrl/sym break valid, e.g. 'end of token'
@@ -154,11 +158,12 @@ int numbertoken(char *input, int idx)
 
 	// return to next index
 	free(buf);
-	return idx + 1;
+	return idx;
 }
 
 int symboltoken(char *input, int idx)
 {
+	int comment = 0;
 	switch (input[idx])
 	{
 	case '.':
@@ -228,8 +233,8 @@ int symboltoken(char *input, int idx)
 		else if (input[idx + 1] == '=')
 		{
 			strcpy(list[lex_index].name, "<=");
-			list[lex_index].value = neqsym;
-			list[lex_index].type = neqsym;
+			list[lex_index].value = leqsym;
+			list[lex_index].type = leqsym;
 			idx++;
 		}
 		else
@@ -264,7 +269,7 @@ int symboltoken(char *input, int idx)
 	case '/':
 		if (input[idx + 1] == '/')
 		{
-			idx++;
+			comment = 1;
 			while (
 				!(input[idx + 1] == '\r' ||
 				  input[idx + 1] == '\n' ||
@@ -272,9 +277,6 @@ int symboltoken(char *input, int idx)
 			{
 				idx++;
 			}
-
-			// reached end of comment
-			idx++;
 		}
 		else
 		{
@@ -293,6 +295,7 @@ int symboltoken(char *input, int idx)
 		strcpy(list[lex_index].name, "-");
 		list[lex_index].value = subsym;
 		list[lex_index].type = subsym;
+		break;
 	case '+':
 		strcpy(list[lex_index].name, "+");
 		list[lex_index].value = addsym;
@@ -315,7 +318,10 @@ int symboltoken(char *input, int idx)
 		return -1;
 	}
 
-	lex_index++;
+	if (!comment)
+	{
+		lex_index++;
+	}
 
 	// return to next index
 	return idx + 1;
