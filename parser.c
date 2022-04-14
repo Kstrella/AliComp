@@ -15,6 +15,7 @@ int cIndex;
 symbol *table;
 int tIndex;
 
+int errCode;
 
 void emit(int opname, int reg, int level, int mvalue);
 void addToSymbolTable(int k, char n[], int s, int l, int a, int m);
@@ -33,7 +34,19 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	table = malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
 	tIndex = 0;
 	
-    // Parsing calls go here    
+    errCode = 0;
+    
+    // Parsing calls go here   
+     int registerCounter = -1;
+     emit(7, 0, 0, M = 0);
+    addToSymbolTable(3, "main", 0, 0, 0, 0);
+    int level = 01;
+    
+    if (errCode = block())
+    {
+        printparseerror(errCode);
+        return NULL;
+    }
     
 	// print off table and code
 	if (printTable)
