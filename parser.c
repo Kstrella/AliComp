@@ -656,100 +656,140 @@ int statement()
            registercounter--
     */
 }
+// Converted
 int condition()
 {
-    /*
-       expression()
-       if list[listidx] is eqlsym
-           listidx++
-           expression()
-           emit EQL (18, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-           registercounter--
-       else if list[listidx] is neqsym
-           listidx++
-           expression()
-           emit NEQ (19, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-           registercounter--
-       else if list[listidx] is lsssym
-           listidx++
-           expression()
-           emit LSS (20, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-           registercounter--
-       else if list[listidx] is leqsym
-           listidx++
-           expression()
-           emit LEQ (21, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-           registercounter--
-       else if list[listidx] is gtrsym
-           listidx++
-           expression()
-           emit GTR (22, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-           registercounter--
-       else if list[listidx] is geqsym
-           listidx++
-           expression()
-           emit GEQ (23, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-           registercounter--
-       else
-           error 21
-    */
+    expression() if (list[listIdx] == eqlsym)
+    {
+        listIdx++;
+        expression();
+        emit EQL(18, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+        registercounter--;
+    }
+    else if (list[listIdx] == neqsym)
+    {
+        listIdx++;
+        expression();
+        emit NEQ(19, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+        registercounter--;
+    }
+    else if (list[listIdx] == lsssym)
+    {
+        listIdx++;
+        expression();
+        emit LSS(20, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+        registercounter--;
+    }
+    else if list[listidx] is leqsym
+        listidx++;
+    expression();
+    emit LEQ(21, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+    registercounter--;
+    else if (list[listIdx] == gtrsym)
+    {
+        listIdx++;
+        expression();
+        emit GTR(22, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+        registercounter--;
+    }
+    else if (list[listidx] == geqsym)
+    {
+        listIdx++;
+        expression();
+        emit GEQ(23, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+        registercounter--;
+    }
+    else
+    {
+        // error 21
+        return 21;
+    }
+    return 0;
 }
+// Converted
 int expression()
 {
-    /*
-           if list[listidx] is subsym
-           listidx++
-           term()
-           emit NEG (12, R = registercounter, 0, M = registercounter)
-           while list[listidx] is addsym or subsym
-               if list[listidx] is addsym
-                   listidx++
-                   term()
-                   emit ADD (13, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-                   registercounter--
-               else
-                   listidx++
-                   term()
-                   emit SUB (14, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-                   registercounter--
-       else
-           term()
-           while list[listidx] is addsym or subsym
-               if list[listidx] is addsym
-                   listidx++
-                   term()
-                   emit ADD (13, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-                   registercounter--
-               else
-                   listidx++
-                   term()
-                   emit SUB (14, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-                   registercounter--
-       if list[listidx] is lparenthesissym, identsym, or numbersym
-           error 22
-    */
+    if (list[listIdx] == subsym)
+    {
+        listIdx++;
+        term();
+        emit NEG(12, R = registercounter, 0, M = registercounter);
+
+        while (list[listIdx] == addsym || subsym)
+        {
+            if (list[listIdx] == addsym)
+            {
+                listIdx++;
+                term();
+                emit ADD(13, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+                registercounter--;
+            }
+            else
+            {
+                listIdx++;
+                term();
+                emit SUB(14, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+                registercounter--;
+            }
+        }
+    }
+    else
+    {
+        term();
+        while (list[listIdx] == addsym || subsym)
+        {
+            if (list[listIdx] == addsym)
+            {
+                listIdx++;
+                term();
+                emit ADD(13, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+                registercounter--;
+            }
+            else
+            {
+                listIdx++;
+                term();
+                emit SUB(14, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+                registercounter--;
+            }
+        }
+    }
+    if list
+        [listidx] is lparenthesissym, identsym, or numbersym
+        {
+            // error 22
+            return 22;
+        }
+    return 0;
 }
+// Converted
 int term()
 {
-    /*
-       factor()
-       while list[listidx] is multsym, divsym, or modsym
-           if list[listidx] is multsym
-               listidx++
-               factor()
-               emit MUL (15, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-               registercounter--
-           else if list[listidx] is divsym
-               listidx++
-               factor()
-               emit DIV (16, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-               registercounter--
-           else
-               listidx++
-               factor()
-               emit MOD (17, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-               registercounter--
-    */
+    factor();
+    while (list[listIdx] == multsym || list[listIdx] == divsymlist || [listIdx] == modsym)
+    {
+        if (list[listIdx] == multsym)
+        {
+            listIdx++;
+            factor();
+            emit MUL(15, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+            registercounter--;
+        }
+        else if (list[listIdx] == divsym)
+        {
+            listIdx++;
+            factor();
+            emit DIV(16, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+            registercounter--;
+        }
+        else
+        {
+            listIdx++;
+            factor();
+            emit MOD(17, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+            registercounter--;
+        }
+    }
 }
 // Converted
 int factor()
