@@ -751,66 +751,116 @@ int term()
                registercounter--
     */
 }
+// Converted
 int factor()
 {
-    /*
-       symbolname
-       symidx
-       arrayidxreg
-       varlocreg
-       if list[listidx] is identsym
-           symbolname = list[listidx].name
-           listidx++
-           if list[listidx] is lbracketsym
-               listidx++
-               symidx = findsymbol(symbolname, 2)
-               if symidx == -1
-                   if findsymbol(symbolname, 1) != -1
-                       error 11
-                   else if findsymbol(symbolname, 3) != -1
-                       error 9
-                   else
-                       error 10
-               expression()
-               arrayidxreg = registercounter
-               if list[listidx] is not rbracketsym
-                   error 5
-               listidx++
-               registercounter++
-               if registercounter >= 10
-                   error 14
-               emit LIT (1, R = registercounter, 0, M = table[symidx].addr)
-               emit ADD (13, R = arrayidxreg, L = arrayidxreg, M = registercounter)
-               registercounter--
-               emit LOD (3, R = registercounter, L = level - table[symidx].level, M = arrayidxreg)
-           else
-               symidx = findsymbol(symbolname, 1)
-               if symidx == -1
-                   if findsymbol(symbolname, 2) != -1
-                       error 12
-                   else if findsymbol(symbolname, 3) != -1
-                       error 9
-                   else
-                       error 10
-               registercounter++
-               if registercounter >= 10
-                   error 14
-               emit LIT (1, R = registercounter, 0, M = table[symidx].addr)
-               varlocreg = registercounter
-               emit LOD (3, R = registercounter, L = level - table[symidx].level, M = varlocreg)
-       else if list[listidx] is numbersym
-           registercounter++
-           if registercounter >= 10
-               error 14
-           emit LIT (1, R = registercounter, 0, M = list[listidx].value)
-           listidx++
-       else if list[listidx] is lparenthesissym
-           listidx++
-           expression()
-           if list[listidx] is not rparenthesissym
-               error 23
-           listidx++
-       else
-           error 24
-    */
+    char *symName;
+    int symIdx;
+    int arrayIdxRegister;
+    int varLocReg;
+
+    if (list[listIdx] == identsym)
+    {
+        strcpy(symName, list[listIdx].name);
+        listIdx++;
+        if (list[listIdx] == lbracketsym)
+        {
+            listIdx++;
+            symIdx = findSymbol(symName, 2);
+            if (symIdx == -1)
+            {
+                if (findSymbol(symName, 1) != -1)
+                {
+                    printparseerror(11);
+                    return 0;
+                }
+                else if (findSymbol(symName, 3) != -1)
+                {
+                    printparseerror(9);
+                    return 0;
+                }
+                else
+                {
+                    printparseerror(10);
+                    return 0;
+                }
+            }
+            expression();
+            arrayIdxRegister = registerCounter;
+            if (list[listIdx] != rbracketsym)
+            {
+                printparseerror(5);
+                return 0;
+            }
+            listIdx++;
+            registerCounter++;
+            if (registerCounter >= 10)
+            {
+                printparseerror(14);
+                return 0;
+            }
+            emit(1, R = registerCounter, 0, M = table[symIdx].addr);
+            emit(13, R = arrayIdxRegister, L = arrayIdxRegister, M = registerCounter);
+            registerCounter--;
+            emit(3, R = registerCounter, L = level - table[symIdx].level, M = arrayIdxRegister);
+        }
+        else
+        {
+            symIdx = findSymbol(symName, 1);
+            if (symIdx == -1)
+            {
+                if (findSymbol(symName, 2) != -1)
+                {
+                    printparseerror(12);
+                    return 0;
+                }
+                else if (findSymbol(symName, 3) != -1)
+                {
+                    printparseerror(9);
+                    return 0;
+                }
+                else
+                {
+                    printparseerror(10);
+                    return 0;
+                }
+            }
+            registerCounter++;
+            if (registerCounter >= 10)
+            {
+                printparseerror(14);
+                return 0;
+            }
+            emit(1, R = registerCounter, 0, M = table[symIdx].addr);
+            varLocReg = registerCounter;
+            emit(3, R = registerCounter, L = level - table[symIdx].level, M = varLocReg);
+        }
+    }
+    else if (list[listIdx] == numbersym)
+    {
+        registerCounter++;
+        if (registerCounter >= 10)
+        {
+            printparseerror(14);
+            return 0;
+        }
+        emit(1, R = registerCounter, 0, M = list[listIdx].value);
+        listIdx++;
+    }
+    else if (list[listIdx] == lparenthesissym)
+    {
+        listIdx++;
+        expression();
+        if (list[listIdx] != rparenthesissym)
+        {
+            printparseerror(23);
+            return 0;
+        }
+        listIdx++;
+    }
+    else
+    {
+        printparseerror(24);
+        return 0;
+    }
 }
