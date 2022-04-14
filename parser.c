@@ -9,14 +9,20 @@
 
 // generated code
 instruction *code;
-int cIndex;
+int codeIndex;
 
 // symbol table
 symbol *table;
-int tIndex;
+int tableIndex;
+
+// lexeme list
+lexeme *list;
+int listIdx;
 
 int errCode;
 int level;
+int registerCounter;
+int M;
 
 void emit(int opname, int reg, int level, int mvalue);
 void addToSymbolTable(int k, char n[], int s, int l, int a, int m);
@@ -35,13 +41,14 @@ int expression();
 int term();
 int factor();
 
+// Converted
 instruction *parse(lexeme *list, int printTable, int printCode)
 {
     // set up program variables
     code = malloc(sizeof(instruction) * MAX_CODE_LENGTH);
-    cIndex = 0;
+    codeIndex = 0;
     table = malloc(sizeof(symbol) * MAX_SYMBOL_COUNT);
-    tIndex = 0;
+    tableIndex = 0;
 
     errCode = 0;
 
@@ -59,7 +66,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 
     emit(11, 0, 0, 0);
     code[0].m = table[0].addr;
-    for (int i = 0; i < cIndex; i++)
+    for (int i = 0; i < codeIndex; i++)
     {
         if (code[i].opcode == 5)
         {
@@ -74,36 +81,66 @@ instruction *parse(lexeme *list, int printTable, int printCode)
         printassemblycode();
 
     // mark the end of the code
-    code[cIndex].opcode = -1;
+    code[codeIndex].opcode = -1;
     return code;
+}
+
+int varDec()
+{
+    int memSize = 3;
+    char *symName;
+
+    if (list[listIdx] == varsym)
+    {
+        listIdx++;
+        if (list[listIdx] != identsym)
+        {
+            return 2; // TODO
+        }
+        if (multipledeclarationcheck(list[listIdx].name]) != -1)
+        {
+            return 3; // TODO
+        }
+        strcpy(symName, list[listIdx].name);
+        listIdx++;
+        if (list[listIdx] == lbracketsym)
+        {
+            listIdx++;
+            if (list[listIdx] != numbersym || list[listIdx].value == 0)
+            {
+                return 4;
+            }
+            arraySize = list[listIdx].value;
+        }
+    }
 }
 
 // Emits new instruction to generated code array
 void emit(int opname, int reg, int level, int mvalue)
 {
-    code[cIndex].opcode = opname;
-    code[cIndex].r = reg;
-    code[cIndex].l = level;
-    code[cIndex].m = mvalue;
-    cIndex++;
+    code[codeIndex].opcode = opname;
+    code[codeIndex].r = reg;
+    code[codeIndex].l = level;
+    code[codeIndex].m = mvalue;
+    codeIndex++;
 }
 
 // Emits new symbol to Symbol Table
 void addToSymbolTable(int k, char n[], int s, int l, int a, int m)
 {
-    table[tIndex].kind = k;
-    strcpy(table[tIndex].name, n);
-    table[tIndex].size = s;
-    table[tIndex].level = l;
-    table[tIndex].addr = a;
-    table[tIndex].mark = m;
-    tIndex++;
+    table[tableIndex].kind = k;
+    strcpy(table[tableIndex].name, n);
+    table[tableIndex].size = s;
+    table[tableIndex].level = l;
+    table[tableIndex].addr = a;
+    table[tableIndex].mark = m;
+    tableIndex++;
 }
 
 void mark()
 {
     int i;
-    for (i = tIndex - 1; i >= 0; i--)
+    for (i = tableIndex - 1; i >= 0; i--)
     {
         if (table[i].mark == 1)
             continue;
@@ -116,7 +153,7 @@ void mark()
 int multipledeclarationcheck(char name[])
 {
     int i;
-    for (i = 0; i < tIndex; i++)
+    for (i = 0; i < tableIndex; i++)
         if (table[i].mark == 0 && table[i].level == level && strcmp(name, table[i].name) == 0)
             return i;
     return -1;
@@ -127,7 +164,7 @@ int findsymbol(char name[], int kind)
     int i;
     int max_idx = -1;
     int max_lvl = -1;
-    for (i = 0; i < tIndex; i++)
+    for (i = 0; i < tableIndex; i++)
     {
         if (table[i].mark == 0 && table[i].kind == kind && strcmp(name, table[i].name) == 0)
         {
@@ -232,7 +269,7 @@ void printsymboltable()
     printf("Symbol Table:\n");
     printf("Kind | Name        | Size | Level | Address | Mark\n");
     printf("---------------------------------------------------\n");
-    for (i = 0; i < tIndex; i++)
+    for (i = 0; i < tableIndex; i++)
         printf("%4d | %11s | %5d | %4d | %5d | %5d\n", table[i].kind, table[i].name, table[i].size, table[i].level, table[i].addr, table[i].mark);
 
     free(table);
@@ -243,7 +280,7 @@ void printassemblycode()
 {
     int i;
     printf("Line\tOP Code\tOP Name\tR\tL\tM\n");
-    for (i = 0; i < cIndex; i++)
+    for (i = 0; i < codeIndex; i++)
     {
         printf("%d\t", i);
         printf("%d\t", code[i].opcode);
@@ -329,63 +366,94 @@ void printassemblycode()
         free(table);
 }
 
+// Converted
 int block()
 {
-    /*
-    block
-    level++
-    procedureidx = tableidx - 1
-    x = var-declaration()
-    procedure-declaration()
-    table[procedureidx].addr = codeidx
-    emit INC (6, 0, 0, M = x)
-    statement()
-    mark()
-    level--
-    */
+    level++;
+    int procedureIdx = tableIdx - 1;
+    int x = varDec();
+    procedureDec()
+        table[procedureIdx]
+            .addr = codeIndex;
+    emit(6, 0, 0, M = x);
+    statement();
+    mark();
+    level--;
 }
 
+// Converted
 int varDec()
 {
-    /*
-       memorysize = 3
-       symbolname
-       arraysize
-       if list[listidx] is varsym
-           do
-               listidx++
-               if list[listidx] is not identsym
-                   error 2
-               if multipledeclarationcheck(list[listidx].name) != -1
-                   error 3
-               symbolname = list[listidx].name
-               listidx++
-               if list[listidx] is lbracketsym
-                   listidx++
-                   if list[listidx] is not numbersym || list[listidx].value == 0
-                       error 4
-                   arraysize = list[listidx].value
-                   listidx++
-                   if list[listidx] is multsym, divsym, modsym, addsym, subsym
-                       error 4
-                   else if list[listidx] is not rbracket
-                       error 5
-                   listidx++
-                   addtosymboltable(2, symbolname, arraysize, level, memorysize, 0)
-                   memorysize += arraysize
-               else
-                   addtosymboltable(1, symbolname, 0, level, memorysize, 0)
-                   memorysize++
-           while list[listidx] is commasym
-           if list[listidx] is identsym
-               error 6
-           else if list[listidx] is not semicolonsym
-               error 7
-           listidx++
-           return memorysize
-       else
-           return memorysize
-    */
+    int memSize = 3;
+    char *symName;
+    int arraySize;
+
+    if (list[listIdx] == varsym)
+    {
+        do
+        {
+            listIdx++;
+            if (list[listIdx] != identsym)
+            {
+                return 2;
+            }
+            if (multipledeclarationcheck(list[listIdx].name) != -1)
+            {
+                return 3;
+            }
+            strcpy(symName, list[listIdx].name);
+            listIdx++;
+            if (list[listIdx] == lbracketsym)
+            {
+                listIdx++;
+                if (list[listIdx] != numbersym || list[listIdx].value == 0)
+                {
+                    printparseerror(3);
+                    return 0;
+                }
+                arraySize = list[listIdx].value;
+                listIdx++;
+                if (list[listIdx] == multsym ||
+                    list[listIdx] == divsym ||
+                    list[listIdx] == modsym ||
+                    list[listIdx] == addsym ||
+                    list[listIdx] == subsym)
+                {
+                    printparseerror(4);
+                    return 0;
+                }
+                else if (list[listIdx] != rbracketsym)
+                {
+                    printparseerror(5);
+                    return 0;
+                }
+                listIdx++;
+                addToSymbolTable(2, symName, arraySize, level, memSize, 0);
+                memSize != arraySize;
+            }
+            else
+            {
+                addToSymbolTable(1, symName, 0, level, memSize, 0);
+                memSize++;
+            }
+        } while (list[listIdx] == commasym);
+        if (list[listIdx] == identsym)
+        {
+            printparseerror(6);
+            return 0;
+        }
+        else if (list[listIdx] != semicolonsym)
+        {
+            printparseerror(7);
+            return 0;
+        }
+        listIdx++;
+        return memSize;
+    }
+    else
+    {
+        return memSize;
+    }
 }
 int procedureDec()
 {
@@ -410,7 +478,7 @@ int procedureDec()
            emit RET (2, 0, 0, 0)
     */
 }
-int statemnent()
+int statement()
 {
     /*
            symbolname
