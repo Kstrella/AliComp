@@ -372,7 +372,7 @@ int block()
     level++;
     int procedureIdx = tableIdx - 1;
     int x = varDec();
-    procedureDec()
+    procedureDec();
         table[procedureIdx]
             .addr = codeIndex;
     emit(6, 0, 0, M = x);
@@ -455,28 +455,44 @@ int varDec()
         return memSize;
     }
 }
+//converted
 int procedureDec()
 {
-    /*
+    
        symbolname
-       while list[listidx] is proceduresym
-           listidx++
-           if list[listidx] is not identsym
-               error 2
-           else if multipledeclarationcheck(list[listidx].name) != -1
-               error 3
+       while (list[listIdx] == proceduresym)
+       {
+           listIdx++;
+           if (list[listIdx] != identsym)
+           {
+               //error 2
+               printparseerror(2);
+               
+           }
+           else if (multipledeclarationcheck(list[listIdx].name) != -1)
+           {
+               //error 3
+               printparseerror(3);
+               
            symbolname = list[listidx].name
-           listidx++
-           if list[listidx] is not semicolonsym
-               error 8
-           listidx++
-           addtosymboltable(3, symbolname, 0, level, 0, 0)
-           block()
-           if list[listidx] is not semicolonsym
-               error 7
-           listidx++
-           emit RET (2, 0, 0, 0)
-    */
+           listidx++;
+           }
+           if (list[listIdx] != semicolonsym)
+           {
+               //error 8
+               printparseerror(8);
+           listidx++;
+           addtosymboltable(3, symbolname, 0, level, 0, 0);
+           block();
+           }
+           if (list[listidx] is not semicolonsym)
+           {
+               //error 7
+               printparseerror(7);
+           listidx++;
+           emit RET (2, 0, 0, 0);
+           }
+       }
 }
 int statement()
 {
@@ -680,11 +696,13 @@ int condition()
         emit LSS(20, R = registercounter - 1, L = registercounter - 1, M = registercounter);
         registercounter--;
     }
-    else if list[listidx] is leqsym
+    else if (list[listidx] == leqsym)
+    {
         listidx++;
     expression();
     emit LEQ(21, R = registercounter - 1, L = registercounter - 1, M = registercounter);
     registercounter--;
+    }
     else if (list[listIdx] == gtrsym)
     {
         listIdx++;
@@ -702,9 +720,10 @@ int condition()
     else
     {
         // error 21
-        return 21;
+      //  return 21;
+      printparseerror(21);
     }
-    return 0;
+    
 }
 // Converted
 int expression()
@@ -758,7 +777,8 @@ int expression()
         [listidx] is lparenthesissym, identsym, or numbersym
         {
             // error 22
-            return 22;
+            //return 22;
+            printparseerror(22);
         }
     return 0;
 }
