@@ -497,7 +497,7 @@ int statement()
                    else
                        error 10
                expression()
-               arrayidxreg = registercounter
+               arrayidxreg = registerCounter
                if list[listidx] is not rbracketsym
                    error 5
                listidx++
@@ -505,14 +505,14 @@ int statement()
                    error 13
                listidx++
                expression()
-               registercounter++
-               if registercounter >= 10
+               registerCounter++
+               if registerCounter >= 10
                    error 14
-               emit LIT (1, R = registercounter, 0, M = table[symidx].addr)
-               emit ADD (13, R = arrayidxreg, L = arrayidxreg, registercounter)
-               registercounter--
-               emit STO (4, R = registercounter, L = level - table[symidx].level, M = arrayidxreg)
-               registercounter -= 2
+               emit LIT (1, R = registerCounter, 0, M = table[symidx].addr)
+               emit ADD (13, R = arrayidxreg, L = arrayidxreg, registerCounter)
+               registerCounter--
+               emit STO (4, R = registerCounter, L = level - table[symidx].level, M = arrayidxreg)
+               registerCounter -= 2
            else
                symidx = findsymbol(symbolname, 1)
                if symidx == -1
@@ -522,17 +522,17 @@ int statement()
                        error 9
                    else
                        error 10
-               registercounter++
-               if registercounter >= 10
+               registerCounter++
+               if registerCounter >= 10
                    error 14
-               emit LIT(1, R = registercounter, 0, M = table[symidx].addr)
-               varlocreg = registercounter
+               emit LIT(1, R = registerCounter, 0, M = table[symidx].addr)
+               varlocreg = registerCounter
                if list[listidx] is not assignsym
                    error 13
                listidx++
                expression()
-               emit STO (4, R = registercounter, L = level - table[symidx].level, M = varlocreg)
-               registercounter -= 2
+               emit STO (4, R = registerCounter, L = level - table[symidx].level, M = varlocreg)
+               registerCounter -= 2
        call
            listidx++
            if list[listidx] is not identsym
@@ -560,8 +560,8 @@ int statement()
            listidx++
            condition()
            jpcidx = codeidx
-           emit JPC (8, R = registercounter, 0, M = 0)
-           registercounter--
+           emit JPC (8, R = registerCounter, 0, M = 0)
+           registerCounter--
            if list[listidx] is not questionsym
                error 18
            listidx++
@@ -583,14 +583,14 @@ int statement()
                error 19
            listidx++
            condition()
-           registercounter++
-           if registercounter >= 10
+           registerCounter++
+           if registerCounter >= 10
                error 14
-           emit LIT(1, R = registercounter, 0, M = 0)
-           emit EQL (18, R = registercounter - 1, L = registercounter - 1, M = registercounter)
-           registercounter--
-           emit JPC (8, R = registercounter, 0, M = loopidx)
-           registercounter--
+           emit LIT(1, R = registerCounter, 0, M = 0)
+           emit EQL (18, R = registerCounter - 1, L = registerCounter - 1, M = registerCounter)
+           registerCounter--
+           emit JPC (8, R = registerCounter, 0, M = loopidx)
+           registerCounter--
        read
            listidx++
            if list[listidx] is not identsym
@@ -608,22 +608,22 @@ int statement()
                    else
                        error 10
                expression()
-               arrayidxreg = registercounter
+               arrayidxreg = registerCounter
                if list[listidx] is not rbracketsym
                    error 5
                listidx++
-               registercounter++
-               if registercounter >= 10
+               registerCounter++
+               if registerCounter >= 10
                    error 14
-               emit RED (10, R = registercounter, 0, 0)
-               registercounter++
-               if registercounter >= 10
+               emit RED (10, R = registerCounter, 0, 0)
+               registerCounter++
+               if registerCounter >= 10
                    error 14
-               emit LIT (1, R = registercounter, 0, table[symidx].addr)
-               emit ADD (13, R = arrayidxreg, L = arrayidxreg, M = registercounter)
-               registercounter--
-               emit STO (4, R = registercounter, L = level - table[symidx].level, M = arrayidxreg)
-               registercounter -= 2
+               emit LIT (1, R = registerCounter, 0, table[symidx].addr)
+               emit ADD (13, R = arrayidxreg, L = arrayidxreg, M = registerCounter)
+               registerCounter--
+               emit STO (4, R = registerCounter, L = level - table[symidx].level, M = arrayidxreg)
+               registerCounter -= 2
            else
                symidx = findsymbol(symbolname, 1)
                if symidx == -1
@@ -633,133 +633,115 @@ int statement()
                        error 9
                    else
                        error 10
-               registercounter++
-               if registercounter >= 10
+               registerCounter++
+               if registerCounter >= 10
                    error 14
-               emit LIT (1, R = registercounter, 0, table[symidx].addr)
-               varlocreg = registercounter
-               registercounter++
-               if registercounter >= 10
+               emit LIT (1, R = registerCounter, 0, table[symidx].addr)
+               varlocreg = registerCounter
+               registerCounter++
+               if registerCounter >= 10
                    error 14
-               emit RED (10, R = registercounter, 0, 0)
-               emit STO (4, R = registercounter, L = level - table[symidx].level, M = varlocreg)
-               registercounter -= 2
+               emit RED (10, R = registerCounter, 0, 0)
+               emit STO (4, R = registerCounter, L = level - table[symidx].level, M = varlocreg)
+               registerCounter -= 2
        write
            listidx++
            expression()
-           emit WRT (9, R = registercounter, 0, 0)
-           registercounter--
+           emit WRT (9, R = registerCounter, 0, 0)
+           registerCounter--
     */
 }
+
 // Converted
 int condition()
 {
-    expression() if (list[listIdx] == eqlsym)
+    int emitVal;
+    if (expression() == -1) return -1;
+
+    if (list[listIdx].type == eqlsym)
     {
-        listIdx++;
-        expression();
-        emit EQL(18, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-        registercounter--;
+        listidx++;
+        if (expression() == -1) return -1;
+        emitVal = 18;
     }
-    else if (list[listIdx] == neqsym)
+    else if (list[listIdx].type == neqsym)
     {
-        listIdx++;
-        expression();
-        emit NEQ(19, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-        registercounter--;
+        listidx++;
+        if (expression() == -1) return -1;
+        emitVal = 19;
     }
-    else if (list[listIdx] == lsssym)
+    else if (list[listIdx].type == lsssym)
     {
-        listIdx++;
-        expression();
-        emit LSS(20, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-        registercounter--;
+        listidx++;
+        if (expression() == -1) return -1;
+        emitVal = 20;
     }
     else if (list[listidx] == leqsym)
     {
         listidx++;
-        expression();
-        emit LEQ(21, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-        registercounter--;
+        if (expression() == -1) return -1;
+        emitVal = 21;
+        
     }
     else if (list[listIdx] == gtrsym)
     {
-        listIdx++;
-        expression();
-        emit GTR(22, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-        registercounter--;
+        listidx++;
+        if (expression() == -1) return -1;
+        emitVal = 22;
     }
     else if (list[listidx] == geqsym)
     {
-        listIdx++;
-        expression();
-        emit GEQ(23, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-        registercounter--;
+        listidx++;
+        if (expression() == -1) return -1;
+        emitVal = 23;
     }
     else
     {
-        // error 21
-        //  return 21;
         printparseerror(21);
+        return -1;
     }
+    
+    emit(emitVal, registerCounter - 1, registerCounter - 1, registerCounter);
+    registerCounter--;
+    
+    return 0;
 }
+
 // Converted
 int expression()
 {
-    if (list[listIdx] == subsym)
+    int emitVal;
+    
+    if (list[listIdx].type == subsym)
     {
         listIdx++;
-        term();
-        emit NEG(12, R = registercounter, 0, M = registercounter);
-
-        while (list[listIdx] == addsym || subsym)
-        {
-            if (list[listIdx] == addsym)
-            {
-                listIdx++;
-                term();
-                emit ADD(13, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-                registercounter--;
-            }
-            else
-            {
-                listIdx++;
-                term();
-                emit SUB(14, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-                registercounter--;
-            }
-        }
+        if (term() == -1) return -1;
+        emit(12, registerCounter, 0, registerCounter);
     }
     else
     {
-        term();
-        while (list[listIdx] == addsym || subsym)
-        {
-            if (list[listIdx] == addsym)
-            {
-                listIdx++;
-                term();
-                emit ADD(13, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-                registercounter--;
-            }
-            else
-            {
-                listIdx++;
-                term();
-                emit SUB(14, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-                registercounter--;
-            }
-        }
+        if (term() == -1) return -1;
     }
-    if list
-        [listidx] is lparenthesissym, identsym, or numbersym
-        {
-            // error 22
-            // return 22;
-            printparseerror(22);
-        }
+    while (list[listIdx].type == addsym || list[listIdx].type == subsym)
+    {
+        listIdx++;
+        if (term() == -1) return -1;      
+        
+        emitVal = (list[listIdx].type == addsym) ? 13 : 14;
+        
+        emit(emitVal, registerCounter - 1, registerCounter - 1, registerCounter);
+        registerCounter--;
+    }
+    if (list[listIdx].type == lparenthesissym ||
+        list[listIdx].type == identsym ||
+        list[listIdx].type == numbersym)
+    {
+        printparseerror(22);
+        return -1;
+    }
     return 0;
 }
+
 // Converted
 int term()
 {
@@ -770,22 +752,22 @@ int term()
         {
             listIdx++;
             factor();
-            emit MUL(15, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-            registercounter--;
+            emit MUL(15, R = registerCounter - 1, L = registerCounter - 1, M = registerCounter);
+            registerCounter--;
         }
         else if (list[listIdx] == divsym)
         {
             listIdx++;
             factor();
-            emit DIV(16, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-            registercounter--;
+            emit DIV(16, R = registerCounter - 1, L = registerCounter - 1, M = registerCounter);
+            registerCounter--;
         }
         else
         {
             listIdx++;
             factor();
-            emit MOD(17, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-            registercounter--;
+            emit MOD(17, R = registerCounter - 1, L = registerCounter - 1, M = registerCounter);
+            registerCounter--;
         }
     }
 }
