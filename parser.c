@@ -85,36 +85,6 @@ instruction *parse(lexeme *list, int printTable, int printCode)
     return code;
 }
 
-int varDec()
-{
-    int memSize = 3;
-    char *symName;
-
-    if (list[listIdx] == varsym)
-    {
-        listIdx++;
-        if (list[listIdx] != identsym)
-        {
-            return 2; // TODO
-        }
-        if (multipledeclarationcheck(list[listIdx].name]) != -1)
-        {
-            return 3; // TODO
-        }
-        strcpy(symName, list[listIdx].name);
-        listIdx++;
-        if (list[listIdx] == lbracketsym)
-        {
-            listIdx++;
-            if (list[listIdx] != numbersym || list[listIdx].value == 0)
-            {
-                return 4;
-            }
-            arraySize = list[listIdx].value;
-        }
-    }
-}
-
 // Emits new instruction to generated code array
 void emit(int opname, int reg, int level, int mvalue)
 {
@@ -373,8 +343,7 @@ int block()
     int procedureIdx = tableIdx - 1;
     int x = varDec();
     procedureDec();
-        table[procedureIdx]
-            .addr = codeIndex;
+    table[procedureIdx].addr = codeIndex;
     emit(6, 0, 0, M = x);
     statement();
     mark();
@@ -395,11 +364,13 @@ int varDec()
             listIdx++;
             if (list[listIdx] != identsym)
             {
-                return 2;
+                printparseerror(2);
+                return 1;
             }
             if (multipledeclarationcheck(list[listIdx].name) != -1)
             {
-                return 3;
+                printparseerror(3);
+                return 1;
             }
             strcpy(symName, list[listIdx].name);
             listIdx++;
@@ -408,8 +379,8 @@ int varDec()
                 listIdx++;
                 if (list[listIdx] != numbersym || list[listIdx].value == 0)
                 {
-                    printparseerror(3);
-                    return 0;
+                    printparseerror(4);
+                    return 1;
                 }
                 arraySize = list[listIdx].value;
                 listIdx++;
@@ -420,32 +391,32 @@ int varDec()
                     list[listIdx] == subsym)
                 {
                     printparseerror(4);
-                    return 0;
+                    return -1;
                 }
-                else if (list[listIdx] != rbracketsym)
+                else if (list[listIdx].type != rbracketsym)
                 {
                     printparseerror(5);
-                    return 0;
+                    return -1;
                 }
                 listIdx++;
                 addToSymbolTable(2, symName, arraySize, level, memSize, 0);
-                memSize != arraySize;
+                memSize += arraySize;
             }
             else
             {
                 addToSymbolTable(1, symName, 0, level, memSize, 0);
                 memSize++;
             }
-        } while (list[listIdx] == commasym);
-        if (list[listIdx] == identsym)
+        } while (list[listIdx].type == commasym);
+        if (list[listIdx].type == identsym)
         {
             printparseerror(6);
-            return 0;
+            return -1;
         }
-        else if (list[listIdx] != semicolonsym)
+        else if (list[listIdx].type != semicolonsym)
         {
             printparseerror(7);
-            return 0;
+            return -1;
         }
         listIdx++;
         return memSize;
@@ -455,44 +426,52 @@ int varDec()
         return memSize;
     }
 }
-//converted
+
+// Converted
 int procedureDec()
 {
+    char* symName;
     
-       symbolname
-       while (list[listIdx] == proceduresym)
-       {
-           listIdx++;
-           if (list[listIdx] != identsym)
-           {
-               //error 2
-               printparseerror(2);
-               
-           }
-           else if (multipledeclarationcheck(list[listIdx].name) != -1)
-           {
-               //error 3
-               printparseerror(3);
-               
-           symbolname = list[listidx].name
-           listidx++;
-           }
-           if (list[listIdx] != semicolonsym)
-           {
-               //error 8
-               printparseerror(8);
-           listidx++;
-           addtosymboltable(3, symbolname, 0, level, 0, 0);
-           block();
-           }
-           if (list[listidx] is not semicolonsym)
-           {
-               //error 7
-               printparseerror(7);
-           listidx++;
-           emit RET (2, 0, 0, 0);
-           }
-       }
+    while (list[listIdx].type == procsym)
+    {
+        listIdx++;
+        if (list[listIdx].type != identsym)
+        {
+            // error 2
+            printparseerror(2);
+            return -1;
+        }
+        else if (multipledeclarationcheck(list[listIdx].name) != -1)
+        {
+            // error 3
+            printparseerror(3);
+            return -1;
+
+        }
+        strcpy(symName, list[listIdx].name);
+        listIdx++;
+        if (list[listIdx].type != semicolonsym)
+        {
+            // error 8
+            printparseerror(8);
+            return -1;
+        }
+        listidx++;
+        addToSymbolTable(3, symbolname, 0, level, 0, 0);
+        if (block() == -1)
+        {
+            return -1;
+        }
+        if (list[listIdx].type != semicolonsym)
+        {
+            // error 7
+            printparseerror(7);
+            return -1;
+        }
+        listIdx++;
+        emit(2, 0, 0, 0);
+    }
+    return 0;
 }
 int statement()
 {
@@ -699,9 +678,9 @@ int condition()
     else if (list[listidx] == leqsym)
     {
         listidx++;
-    expression();
-    emit LEQ(21, R = registercounter - 1, L = registercounter - 1, M = registercounter);
-    registercounter--;
+        expression();
+        emit LEQ(21, R = registercounter - 1, L = registercounter - 1, M = registercounter);
+        registercounter--;
     }
     else if (list[listIdx] == gtrsym)
     {
@@ -720,10 +699,9 @@ int condition()
     else
     {
         // error 21
-      //  return 21;
-      printparseerror(21);
+        //  return 21;
+        printparseerror(21);
     }
-    
 }
 // Converted
 int expression()
@@ -777,7 +755,7 @@ int expression()
         [listidx] is lparenthesissym, identsym, or numbersym
         {
             // error 22
-            //return 22;
+            // return 22;
             printparseerror(22);
         }
     return 0;
