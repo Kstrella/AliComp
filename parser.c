@@ -125,7 +125,7 @@ int multipleDeclarationCheck(char name[])
     for (i = 0; i < tableIdx; i++)
         if (table[i].mark == 0 && table[i].level == level && strcmp(name, table[i].name) == 0)
             return i;
-    
+    return -1;
 }
 
 int findSymbol(char name[], int kind)
@@ -772,7 +772,7 @@ void statement()
 }
 
 // Converted
-int condition()
+void condition()
 {
     int emitVal;
     expression();
@@ -825,7 +825,7 @@ int condition()
 }
 
 // Converted
-int expression()
+void expression()
 {
     int emitVal;
 
@@ -859,7 +859,7 @@ int expression()
 }
 
 // Converted
-int term()
+void term()
 {
     int emitVal;
 
@@ -890,7 +890,7 @@ int term()
 }
 
 // Converted
-int factor()
+void factor()
 {
     char *symName = malloc(sizeof(char) * 12);
     int symIdx;
