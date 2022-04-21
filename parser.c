@@ -30,7 +30,7 @@ int findSymbol(char name[], int kind);
 void printparseerror(int err_code);
 void printsymboltable();
 void printassemblycode();
-int block();
+void block();
 int varDec();
 int procedureDec();
 int statement();
@@ -55,16 +55,11 @@ instruction *parse(lexeme *list, int printTable, int printCode)
     level = -1;
     lexList = list;
 
-    if (block() == -1)
-    {
-        printparseerror(0);
-        return NULL;
-    }
+    block();
 
     if (lexList[listIdx].type != periodsym)
     {
         printparseerror(1);
-        return NULL;
     }
 
     // HLT
@@ -341,7 +336,7 @@ void printassemblycode()
 }
 
 // Converted
-int block()
+void block()
 {
     level++;
     int procedureIdx = tableIdx - 1;
@@ -353,8 +348,6 @@ int block()
     statement();
     mark();
     level--;
-
-    return 0;
 }
 
 // Converted
