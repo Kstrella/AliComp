@@ -33,11 +33,11 @@ void printassemblycode();
 void block();
 int varDec();
 void procedureDec();
-int statement();
-int condition();
-int expression();
-int term();
-int factor();
+void statement();
+void condition();
+void expression();
+void term();
+void factor();
 
 // Converted
 instruction *parse(lexeme *list, int printTable, int printCode)
