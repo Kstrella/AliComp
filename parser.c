@@ -363,12 +363,12 @@ int varDec()
             if (lexList[listIdx].type != identsym)
             {
                 printparseerror(2);
-                
+                return 0;
             }
             if (multipleDeclarationCheck(lexList[listIdx].name) != -1)
             {
                 printparseerror(3);
-                
+                return 0;
             }
             strcpy(symName, lexList[listIdx].name);
             listIdx++;
@@ -378,7 +378,7 @@ int varDec()
                 if (lexList[listIdx].type != numbersym || lexList[listIdx].value == 0)
                 {
                     printparseerror(4);
-                    
+                    return 0;
                 }
                 arraySize = lexList[listIdx].value;
                 listIdx++;
@@ -389,12 +389,12 @@ int varDec()
                     lexList[listIdx].type == subsym)
                 {
                     printparseerror(4);
-                    
+                    return 0;                  
                 }
                 else if (lexList[listIdx].type != rbracketsym)
                 {
                     printparseerror(5);
-                    
+                    return 0;
                 }
                 listIdx++;
                 addToSymbolTable(2, symName, arraySize, level, memSize, 0);
@@ -409,12 +409,12 @@ int varDec()
         if (lexList[listIdx].type == identsym)
         {
             printparseerror(6);
-            
+            return 0;            
         }
         else if (lexList[listIdx].type != semicolonsym)
         {
             printparseerror(7);
-            
+            return 0;
         }
         listIdx++;
     }
