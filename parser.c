@@ -564,7 +564,7 @@ void statement()
         }
     }
 
-    else if (lexList[listIdx].type == callsym)
+    if (lexList[listIdx].type == callsym)
     {
         listIdx++;
         if (lexList[listIdx].type != identsym)
@@ -589,7 +589,7 @@ void statement()
         listIdx++;
     }
 
-    else if (lexList[listIdx].type == beginsym)
+    if (lexList[listIdx].type == beginsym)
     {
         do
         {
@@ -616,7 +616,7 @@ void statement()
         listIdx++;
     }
 
-    else if (lexList[listIdx].type == ifsym)
+    if (lexList[listIdx].type == ifsym)
     {
         listIdx++;
         condition();
@@ -642,7 +642,7 @@ void statement()
         code[jpcIdx].m = codeIdx;
     }
 
-    else if (lexList[listIdx].type == dosym)
+    if (lexList[listIdx].type == dosym)
     {
         listIdx++;
         loopIdx = codeIdx;
@@ -666,7 +666,7 @@ void statement()
         registerCounter--;
     }
 
-    else if (lexList[listIdx].type == readsym)
+    if (lexList[listIdx].type == readsym)
     {
         listIdx++;
         if (lexList[listIdx].type != identsym)
@@ -762,7 +762,7 @@ void statement()
         }
     }
 
-    else if (lexList[listIdx].type == writesym)
+    if (lexList[listIdx].type == writesym)
     {
         listIdx++;
         expression();
