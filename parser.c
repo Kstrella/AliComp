@@ -74,10 +74,8 @@ instruction *parse(lexeme *list, int printTable, int printCode)
     }
 
     // print off table and code
-    if (printTable)
-        printsymboltable();
-    if (printCode)
-        printassemblycode();
+    printsymboltable();
+    printassemblycode();
 
     // mark the end of the code
     code[codeIdx].opcode = -1;
